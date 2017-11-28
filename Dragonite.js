@@ -18,15 +18,15 @@ var isBeta = false;
 
 var myArgs = process.argv.slice(2);
 switch(myArgs[0]){
-	case '-r': client.login('MzYzNDc4ODk3NzI5MzM5Mzky.DLR5bA.gzQkMRSYjhSpuQryiGAOuiBGWVI');
+	case '-r': client.login('');
 		isBeta = false;
 		version = version + ' Release';
 		break;
-	case '-b': client.login('MzY0OTc3MDY5MzEyMDQ5MTYz.DLXm7w.TPDa3918r1Y5deEu43Le_1cXI0k');
+	case '-b': client.login('');
 		version = version + versionBeta + ' Beta';
 		isBeta = true;
 		break;
-	case '-c': client.login('MzY0OTc3MDY5MzEyMDQ5MTYz.DLXm7w.TPDa3918r1Y5deEu43Le_1cXI0k');
+	case '-c': client.login('');
 		version = version + ' Release Canidate';
 		isBeta = true;
 		break;
