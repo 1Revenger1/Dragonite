@@ -7,29 +7,26 @@ const ytdl = require('ytdl-core');
 const sqlite3 = require('sqlite3').verbose();
 const request = require('request');
 
-const loginLocation = `../../login.js`;
-
 var db = new sqlite3.Database('database.txt')
 
-const Tokens = require(loginLocation);
 
 var prefix = '!!';
-var version = '0.6.3';
-var versionBeta = '.0';
+var version = '0.6.1';
+var versionBeta = '.0'
 var pages;
 var isBeta = false;
 
 var myArgs = process.argv.slice(2);
 switch(myArgs[0]){
-	case '-r': client.login(Tokens.releaseToken());
+	case '-r': client.login('MzYzNDc4ODk3NzI5MzM5Mzky.DLR5bA.gzQkMRSYjhSpuQryiGAOuiBGWVI');
 		isBeta = false;
 		version = version + ' Release';
 		break;
-	case '-b': client.login(Tokens.betaToken());
+	case '-b': client.login('MzY0OTc3MDY5MzEyMDQ5MTYz.DLXm7w.TPDa3918r1Y5deEu43Le_1cXI0k');
 		version = version + versionBeta + ' Beta';
 		isBeta = true;
 		break;
-	case '-c': client.login(Tokens.betaToken());
+	case '-c': client.login('MzY0OTc3MDY5MzEyMDQ5MTYz.DLXm7w.TPDa3918r1Y5deEu43Le_1cXI0k');
 		version = version + ' Release Canidate';
 		isBeta = true;
 		break;
@@ -48,17 +45,17 @@ var timer = 0;
 
 function changeGame() {
 	if(timer === 0){
-		client.user.setActivity('with other sentient bots...what?');
+		client.user.setGame('with other sentient bots...what?');
 		timer = 1;
 		return;
 	}
 	if(timer === 1){
-		client.user.setActivity('Default prefix is ??');
+		client.user.setGame('Default prefix is ??');
 		timer = 2;
 		return;
 	}
 	if(timer === 2){
-		client.user.setActivity('I\'m in ' + Object.keys(servers).length + ' guilds!');
+		client.user.setGame('I\'m in ' + Object.keys(servers).length + ' guilds!');
 		timer = 0;
 		return;
 	}
@@ -136,13 +133,12 @@ client.on('guildDelete', guild => {
 })
 
 function help(message){
-	var embedGen = new Discord.MessageEmbed()
+	var embedGen = new Discord.RichEmbed()
 		.setColor('#E81F2F')
 		.setTitle('Dragonite Commands')
 		//Fields
 		.addField("Version", "Prints out the current version of Dragonite")
 		.addField("Ping", "Return Dragonite\'s response time")
-		.addField("Invite", "Gives the invite link to add Dragonite to your server")
 		.addField("Role <optional:Role Name>", "Will give a list of self-assignable roles unless you give it a role you want")
 		.addField("HelpMusic", "Commands for music")
 		.addField("HelpAdministrator", "Commands for Administrator")
@@ -151,7 +147,7 @@ function help(message){
 }
 
 function helpMusic(message){
-	var embedMus = new Discord.MessageEmbed()
+	var embedMus = new Discord.RichEmbed()
 		.setColor('#E81F2F')
 		.setTitle('Dragonite Music Commands')
 		//Music Commands
@@ -163,7 +159,6 @@ function helpMusic(message){
 		.addField("Pause", "Pauses playback of the stream")
 		.addField("Resume, Unpause", "Resumes playback of the stream")
 		.addField("Queue <optional: page>", "Returns the current queue")
-		.addField("Shuffle", "Shuffles the current playlist")
 		.addField("Volume <number out of 100>", "Changes the volume of playback. Only applies when next video begins")
 		.addField("Search <Search terms>", "Searches youtube for video, then plays first result.");
 
@@ -171,7 +166,7 @@ function helpMusic(message){
 }
 
 function helpAdmin(message){
-	var embedAdmin = new Discord.MessageEmbed()
+	var embedAdmin = new Discord.RichEmbed()
 		.setColor('#E81F2F')
 		.setTitle('Administrative Commands')
 		//Administrative Commands
@@ -246,15 +241,7 @@ client.on('message', message => {
 			message.channel.send('My prefix for this server is ' + servers[message.guild.id].prefix);
 			return;
 		}
-		
-		if(message.content.toLowerCase().indexOf('<@363478897729339392>') !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1){
-			message.channel.send('The prefix for this server is: ' + servers[message.guild.id].prefix);
-		}
-		
-		if(args[0].substring(0, prefix.length) !== prefix){
-			return;
-		}
-		
+
 		switch(args[0].toLowerCase()){
 			case prefix + 'help':
 				help(message);
@@ -293,14 +280,13 @@ client.on('message', message => {
 				break;
 
 			case prefix + 'volume': //sets volume
-				if(!args[1]){message.channel.send("Please give a volume out of 100");
-					return;}
+
 				db.run('UPDATE servers SET volume=' + args[1] + ' WHERE serverid=' + message.guild.id);
 				servers[message.guild.id].volume = args[1]/100;
 				try{
-					servers[message.guild.id].dispatcher.setVolume(args[1]/100);
+				servers[message.guild.id].dispatcher.setVolume(args[1]/100;
 				}catch(err){
-					console.log(err);
+				console.log(err);
 				}
 				break;
 
@@ -314,9 +300,11 @@ client.on('message', message => {
 				}
 			default:
 				try {
-					let commandArg = args[0].split(prefix);
-					let commandFile = require(`./events/${commandArg[1]}.js`);
-					commandFile.run(client, message, args, isBeta, db);
+					if(args[0].substring(0, prefix.length) == prefix){
+						let commandArg = args[0].split(prefix);
+						let commandFile = require(`./events/${commandArg[1]}.js`);
+						commandFile.run(client, message, args, isBeta, db);
+					}
 				} catch (err){
 					//message.channel.send('That is not a command');
 				}
@@ -326,6 +314,3 @@ client.on('message', message => {
 })
 
 module.exports = { servers : servers };
-module.exports.tokens = function(){
-	return Tokens;
-}
