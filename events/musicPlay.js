@@ -11,19 +11,21 @@ exports.run = (client, message, args, isBeta, db, isPlayBot) => {
     const server = require(dragonite).servers[message.guild.id];
     if(!isPlayBot) {message.channel.send("This event is not supposed to be triggered standalone!");}
         
+	if(!server.Vconnection){ //checks if bot is in a voice channel
+        require(`./join.js`).run(client, message, args, isBeta, db);
+    }
+		
         if(!server.isPlaying){
             server.isPlaying = true;
-            var streamOptions = { volume: server.volume };
-            message.channel.send('Now playing ' + server.queue[0].title);
+
+            
             try{
-                server.dispatcher = server.Vconnection.playStream(ytdl(server.queue[0].url, {filter: "audioonly"}), streamOptions);
+                server.dispatcher = server.Vconnection.playStream(ytdl(server.queue[0].url, {filter: "audioonly"}));
+				server.dispatcher.setVolume(server.volume);
+				server.queue[0].channel.send('Now playing ' + server.queue[0].title);
             } catch(err) {
-                try{
-                    console.log(err);
-                    message.channel.send('Please have Dragonite join a channel first');
-                } catch(err){
-                    console.log('Oh noooos!');
-                }
+                console.log(err);
+                message.channel.send('Error playing music - Try making sure Dragonite is in a voice channel');
                 return;
             }
     

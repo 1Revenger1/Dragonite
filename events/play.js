@@ -1,8 +1,9 @@
 const ytdl = require('ytdl-core');
+const SC = require('node-soundcloud');
 var ytkey = 'AIzaSyCJ5oL897AnJ6-TNzP_8C-kJZOoICv_5jE'; //Change to server specefic if added to more servers.
 const request = require('request');
 
-exports.run = (client, message, args, isBeta, db) => {
+exports.run = async (client, message, args, isBeta, db) => {
     var dragonite = null;
     if(isBeta){
         dragonite = `../DragoniteBeta.js`;
@@ -17,9 +18,17 @@ exports.run = (client, message, args, isBeta, db) => {
         return;
     }
 
-    if(!message.guild.me.voiceChannel){ //checks if bot is in a voice channel
-        message.channel.send('The bot must be in a voice channel');
-        return;
+	if((args[1].indexOf('www.') < 0) && (args[1].indexOf('soundcloud') < 0)){
+		message.channel.send('Please provide a link');
+		return;
+	}
+	
+	if(!server.Vconnection){ //checks if bot is in a voice channel
+		try{
+			await require(`./join.js`).run(client, message, args, isBeta, db);
+		} catch(err) {
+			return;
+		}
     }
 
     if(!server.queue) {
@@ -30,12 +39,21 @@ exports.run = (client, message, args, isBeta, db) => {
     var nextPageToken;
 
     try{
+		//if(args[1].indexOf("soundcloud.com") >= 0){
+			
+		
+		
+		//	return;
+		//}
+	
         if(args[1].indexOf("playlist?list=") >= 0){
             let playlistID = args[1].split('=');
             var playlist = requestPlaylist(playlistID, ytkey, '', server, message);
+			
             function requestPlaylist(playlistID, ytkey, nextPageToken, server, message){
-                request("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + playlistID[1] + "&key=" + ytkey + "&pageToken=" + nextPageToken, (error, reponse, body) => {
+                request("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + playlistID[1] + "&key=" + ytkey + "&pageToken=" + nextPageToken, async (error, reponse, body) => {
                     var playlist = JSON.parse(body);
+					message.channel.send('Waiting to get information for playlist, please wait a minute or two');
                     if('error' in playlist){
                         message.channel.send('Error getting playlist');
                         return;
@@ -43,25 +61,40 @@ exports.run = (client, message, args, isBeta, db) => {
                         message.channel.send('The playlist is empty!');
                         return;
                     } else {
-                        var i = 0;
-                        for(i; i < playlist.items.length; i ++){
-                            song = {
-                                url: "https://www.youtube.com/watch?v=" + playlist.items[i].snippet.resourceId.videoId,
-                                title: playlist.items[i].snippet.title,
-                                author: '(does not work with playlist)',
-                                serverid: message.guild.id
-                            }
-                            server.queue.push(song);
-                        } 
+						for(let i = 0; i < playlist.items.length; i++){
+							try{
+								const info = await ytdl.getInfo("https://www.youtube.com/watch?v=" + playlist.items[i].snippet.resourceId.videoId);
+								var song = {
+									url: "https://www.youtube.com/watch?v=" + playlist.items[i].snippet.resourceId.videoId,
+									title: playlist.items[i].snippet.title,
+									author: info.author.name,
+									channel: message.channel,
+									time: info.length_seconds * 1000
+								}
+								if(server.queue){ //If ??stop is used before the queue import is finshed, stop queue import.
+									server.queue.push(song);
+								} else {
+									return;
+								}
+							}catch(e){
+								console.log(e);
+								message.channel.send('Error adding song');
+								continue;
+							}
+							
+
+							if(i > 5){
+								require(`./musicPlay.js`).run(client, message, args, isBeta, db, true);
+							}
+						} 
                     }
                     nextPageToken = playlist.nextPageToken;
-                    console.log(nextPageToken);
                     if(nextPageToken != undefined){
                         requestPlaylist(playlistID, ytkey, nextPageToken, server, message);
                         return;
                     } else {
                         message.channel.send('Playlist imported to queue');
-                        require(`./musicPlay.js`).run(client, message, args, isBeta, db, true);				
+						
                     }
                 });
             }
@@ -71,8 +104,9 @@ exports.run = (client, message, args, isBeta, db) => {
             song = {
                 url: args[1],
                 title: info.title,
-                author: info.author.user,
-                serverid: message.guild.id
+                author: info.author.name,
+				channel: message.channel,
+				time: info.length_seconds * 1000
             }
             server.queue.push(song);
         

@@ -6,6 +6,7 @@ const fs = require('fs');
 const ytdl = require('ytdl-core');
 const sqlite3 = require('sqlite3').verbose();
 const request = require('request');
+const prettyMs = require('pretty-ms');
 
 const loginLocation = `../../login.js`;
 
@@ -14,8 +15,8 @@ var db = new sqlite3.Database('database.txt')
 const Tokens = require(loginLocation);
 
 var prefix = '!!';
-var version = '0.6.3';
-var versionBeta = '.0';
+var version = '0.6.4';
+var versionBeta = '.1';
 var pages;
 var isBeta = false;
 
@@ -50,17 +51,12 @@ function changeGame() {
 	if(timer === 0){
 		client.user.setActivity('with other sentient bots...what?');
 		timer = 1;
-		return;
-	}
-	if(timer === 1){
+	}else if(timer === 1){
 		client.user.setActivity('Default prefix is ??');
 		timer = 2;
-		return;
-	}
-	if(timer === 2){
+	}else if(timer === 2){
 		client.user.setActivity('I\'m in ' + Object.keys(servers).length + ' guilds!');
 		timer = 0;
-		return;
 	}
 }
 
@@ -71,7 +67,8 @@ db.serialize(function() {
 	db.run("ALTER TABLE servers ADD COLUMN levelUpMsg");
 	db.run("ALTER TABLE servers ADD COLUMN roleIDs");
 	db.run("ALTER TABLE servers ADD COLUMN selfAssignOn");
-*/
+	db.run("ALTER TABLE servers ADD COLUMN defaultMusicID");
+	*/
 });
 
 
@@ -84,12 +81,23 @@ client.on('ready', () => {
 				levelsEnabled: row.levelsEnabled,
 				levelsAnnounceInDM: row.levelsAnnounceInLevels,
 				levelUpMsg: row.levelUpMsg,
-				selfAssignOn: row.selfAssignOn
+				selfAssignOn: row.selfAssignOn,
+				defaultMusic: null
 			}
 			if(isBeta){
 				servers[row.serverid].prefix = '??b';
 			}
 
+			if(row.defaultMusicID && client.guilds.exists('id', row.serverid)){
+				try{
+					servers[row.serverid].defaultMusic = client.guilds.get(row.serverid).channels.find('id', row.defaultMusicID);
+				} catch(err){
+					servers[row.serverid].defaultMusic = 'No music channel selected';
+				}
+			} else {
+				servers[row.serverid].defaultMusic = 'No music channel selected';
+			}
+			
 			if(row.roleIDs && client.guilds.exists('id', row.serverid)){
 				servers[row.serverid].roles = [];
 				let roleIDs = row.roleIDs.split(" ");
@@ -100,6 +108,7 @@ client.on('ready', () => {
 				}
 			} else {
 				servers[row.serverid].roles = [];
+				servers[row.serverid].selfAssignOn = 'false';
 			}
 		}, function(err, rows) {
 			fs.readdir("./events/", (err, files) => {
@@ -278,8 +287,9 @@ client.on('message', message => {
 
 			case prefix + 'stop': //removes bot
 				if(message.guild.voiceConnection){
-				servers[message.guild.id].queue = null;
-				message.guild.voiceConnection.disconnect();
+					servers[message.guild.id].queue = null;
+					message.guild.voiceConnection.disconnect();
+					servers[message.guild.id].Vconnection = null;
 				}
 				break;
 
@@ -295,6 +305,17 @@ client.on('message', message => {
 			case prefix + 'volume': //sets volume
 				if(!args[1]){message.channel.send("Please give a volume out of 100");
 					return;}
+				
+				if(!args[1].match(/^[0-9]+$/)){
+					message.channel.send("Not a valid integer");
+					return;
+				}
+				
+				if(args[1] > 100 || args[1] < 0){
+					message.channel.send("Please set a number between 0 and 100");
+					return;
+				}
+				
 				db.run('UPDATE servers SET volume=' + args[1] + ' WHERE serverid=' + message.guild.id);
 				servers[message.guild.id].volume = args[1]/100;
 				try{
@@ -307,9 +328,22 @@ client.on('message', message => {
 			case prefix + 'np':
 			case prefix + ('nowplaying'):
 				if(!servers[message.guild.id].isPlaying){
+					message.channel.send('Currently not playing anything');
 					break;
 				} else {
-					message.channel.send('Currently playing ' + servers[message.guild.id].queue[0].title + ' by ' + servers[message.guild.id].queue[0].author);
+					const info = ytdl.getInfo(server.queue[0].url)
+						.then(info => {
+							var optionsEmbed = new Discord.MessageEmbed()
+								.setColor('#E81F2F')
+								.setTitle(servers[message.guild.id].queue[0].title)
+								.setThumbnail(info.iurl)
+								.setAuthor('Now playing')
+								.setURL(servers[message.guild.id].queue[0].url)
+								.addField('Author', servers[message.guild.id].queue[0].author)
+								.addField('Progress', prettyMs(server.dispatcher.time, {secDecimalDigits: 0}) + ' / ' + prettyMs(server.queue[0].time, {secDecimalDigits: 0}));
+						
+							message.channel.send({embed : optionsEmbed});
+						});
 					break;
 				}
 			default:

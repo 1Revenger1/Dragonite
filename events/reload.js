@@ -24,7 +24,7 @@ exports.run = (client, message, args, isBeta, db) => {
     // the path is relative to the *current folder*, so just ./filename.js
     try{
         delete require.cache[require.resolve(`./${args[1]}.js`)];
-        message.reply(`The command ${args[1]} has been reloaded`);
+        message.reply(`The command \`${args[1]}\` has been reloaded`);
     } catch(err){
         message.channel.send('Please use a real command name');
     }

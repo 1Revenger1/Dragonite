@@ -1,4 +1,4 @@
-exports.run = (client, message, args, isBeta, db) => {
+exports.run = async (client, message, args, isBeta, db) => {
     var dragonite = null;
     if(isBeta){
         dragonite = `../DragoniteBeta.js`;
