@@ -1,4 +1,6 @@
-exports.run = (client, message, args, isBeta, db) => {
+const Discord = require('discord.js');
+
+exports.run = async(client, message, args, isBeta, db) => {
     var dragonite = null;
     if(isBeta){
         dragonite = `../DragoniteBeta.js`;

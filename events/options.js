@@ -33,7 +33,7 @@ exports.run = (client, message, args, isBeta, db) => {
         var rolesOn = server.selfAssignOn;
 		var musicChannel = server.defaultMusic;
 		if(musicChannel instanceof Object){
-			musicChannel = 'Set to ' + musicChannel.name;
+			musicChannel = 'Set to: *' + musicChannel.name + '*';
 		}
 		
         callOptionsEmbed(rolesOn, musicChannel);
@@ -68,6 +68,8 @@ exports.run = (client, message, args, isBeta, db) => {
 					message.channel.send('That is not a valid voice channel');
 				}
 			}
+			break;
+		case "logging":
 			break;
         default:
             message.channel.send("That is not an option you can set.");

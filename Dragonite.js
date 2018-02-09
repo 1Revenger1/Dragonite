@@ -1,3 +1,4 @@
+const date = new Date();
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const opus = require('node-opus');
@@ -8,6 +9,7 @@ const sqlite3 = require('sqlite3').verbose();
 const request = require('request');
 const prettyMs = require('pretty-ms');
 
+
 const loginLocation = `../../login.js`;
 
 var db = new sqlite3.Database('database.txt')
@@ -15,8 +17,9 @@ var db = new sqlite3.Database('database.txt')
 const Tokens = require(loginLocation);
 
 var prefix = '!!';
-var version = '0.6.4';
+var version = '0.6.5';
 var versionBeta = '.1';
+var checkLocation;
 var pages;
 var isBeta = false;
 
@@ -25,18 +28,19 @@ switch(myArgs[0]){
 	case '-r': client.login(Tokens.releaseToken());
 		isBeta = false;
 		version = version + ' Release';
+		checkLocation = 'events';
 		break;
 	case '-b': client.login(Tokens.betaToken());
 		version = version + versionBeta + ' Beta';
 		isBeta = true;
+		checkLocation = 'eventsBeta';
 		break;
 	case '-c': client.login(Tokens.betaToken());
 		version = version + ' Release Canidate';
 		isBeta = true;
+		checkLocation = 'eventsBeta';
 		break;
 }
-
-
 
 var tempStorage = {};
 //ID, musicChannel, logChannel
@@ -51,17 +55,22 @@ function changeGame() {
 	if(timer === 0){
 		client.user.setActivity('with other sentient bots...what?');
 		timer = 1;
-	}else if(timer === 1){
+		return;
+	}
+	if(timer === 1){
 		client.user.setActivity('Default prefix is ??');
 		timer = 2;
-	}else if(timer === 2){
+		return;
+	}
+	if(timer === 2){
 		client.user.setActivity('I\'m in ' + Object.keys(servers).length + ' guilds!');
 		timer = 0;
+		return;
 	}
 }
 
 db.serialize(function() {
-	db.run("CREATE TABLE IF NOT EXISTS servers(serverid TEXT, prefix TEXT DEFAULT \'??\', volume TEXT DEFAULT 0.5, levelsEnabled TEXT DEFAULT false, levelsEnabled TEXT DEFAULT false, levelsAnnounceInDM TEXT DEFAULT false, levelupMsg TEXT DEFAULT \'Congrats, you have leveled up!\', roleIDs TEXT, selfAssignOn TEXT DEFAULT false)");
+	db.run("CREATE TABLE IF NOT EXISTS servers(serverid TEXT, prefix TEXT DEFAULT '??', volume TEXT DEFAULT 0.5, levelsEnabled TEXT DEFAULT false, levelsEnabled TEXT DEFAULT false, levelsAnnounceInDM TEXT DEFAULT false, levelupMsg TEXT DEFAULT 'Congrats, you have leveled up!', roleIDs TEXT, selfAssignOn TEXT DEFAULT false)");
 	/*db.run("ALTER TABLE servers ADD COLUMN levelsEnabled");
 	db.run("Alter Table servers ADD COLUMN levelsAnnounceInDM");
 	db.run("ALTER TABLE servers ADD COLUMN levelUpMsg");
@@ -114,83 +123,48 @@ client.on('ready', () => {
 			fs.readdir("./events/", (err, files) => {
 				if (err) return console.error(err);
 				files.forEach(file => {
-					let eventFunction = require(`./events/${file}`);
+					console.log(file);
+					let eventFunction = require(`./${checkLocation}/${file}`);
 					let eventName = file.split(".")[0];
 					client.on(eventName, (...args) => eventFunction.run(client, ...args));
-				})
+				});
 				console.log('I am ready!');
 				setInterval(changeGame, 10000);
 				isTakingCommands = true;
 			});
-		})
-	})
-})
+		});
+	});
+});
 
 client.on('guildCreate', guild => {
-	db.run("INSERT INTO servers (serverid, volume) VALUES(" + guild.id +", 0.50)");
+	db.get("SELECT serverid FROM servers WHERE serverid = " + guild.id, function(err, row){
+		if(row != undefined){
+			return;
+		} else {
+			db.run("INSERT INTO servers (serverid, volume) VALUES(" + guild.id +", 50)");
 	
-	if(isBeta){
-		servers[guild.id] = {
-			prefix: '??b'
-		};
-	}
+			if(isBeta){
+				servers[guild.id] = {
+					prefix: '??b'
+				};
+			}
 
-	servers[guild.id] = {
-		prefix: '??'
-	};
-})
+			servers[guild.id] = {
+				prefix: '??'
+			}
+			
+			servers[guild.id].defaultMusic = "No music channel selected";
+			db.run("UPDATE servers SET defaultMusicID=null WHERE serverid = " + guild.id);
+		}
+	});
+});
 
 client.on('guildDelete', guild => {
 	db.run("DELETE FROM servers WHERE serverid=" + guild.id);
 })
 
-function help(message){
-	var embedGen = new Discord.MessageEmbed()
-		.setColor('#E81F2F')
-		.setTitle('Dragonite Commands')
-		//Fields
-		.addField("Version", "Prints out the current version of Dragonite")
-		.addField("Ping", "Return Dragonite\'s response time")
-		.addField("Invite", "Gives the invite link to add Dragonite to your server")
-		.addField("Role <optional:Role Name>", "Will give a list of self-assignable roles unless you give it a role you want")
-		.addField("HelpMusic", "Commands for music")
-		.addField("HelpAdministrator", "Commands for Administrator")
-
-	message.channel.send({embed: embedGen});
-}
-
-function helpMusic(message){
-	var embedMus = new Discord.MessageEmbed()
-		.setColor('#E81F2F')
-		.setTitle('Dragonite Music Commands')
-		//Music Commands
-		.addField("Join", "Makes Dragonite join the current voice channel you are in")
-		.addField("Play <URL>", "Streams music from youtube video or playlist link to voice channel Dragonite is in and adds it to the queue")
-		.addField("NowPlaying, np", "Gives title of the song currently playing")
-		.addField("Skip", "Skips the current song")
-		.addField("Stop", "Stops Dragonite streaming and forces it to leave the voice channel")
-		.addField("Pause", "Pauses playback of the stream")
-		.addField("Resume, Unpause", "Resumes playback of the stream")
-		.addField("Queue <optional: page>", "Returns the current queue")
-		.addField("Shuffle", "Shuffles the current playlist")
-		.addField("Volume <number out of 100>", "Changes the volume of playback. Only applies when next video begins")
-		.addField("Search <Search terms>", "Searches youtube for video, then plays first result.");
-
-	message.channel.send({embed: embedMus});
-}
-
-function helpAdmin(message){
-	var embedAdmin = new Discord.MessageEmbed()
-		.setColor('#E81F2F')
-		.setTitle('Administrative Commands')
-		//Administrative Commands
-		.addField("addRole <Name of Role>", "Adds role to the list of self-assignable roles")
-		.addField("removeRole <Name of Role>", "Removes role from list of self-assignable roles")
-		.addField("Options <optional:option> <optional:value>", "Allows Administrators to set server options")
-		.addField("ChangePrefix <new prefix>", "Allows members with the Administrator permission to change the prefix for the server")
-		.addField("Prefix", "Returns current prefix saved for this server");
-				
-	message.channel.send({embed: embedAdmin});
+function runOtherEvent(otherEvent, message){
+	require(`./otherEvents/${otherEvent}.js`).run(client, message, isBeta, db);
 }
 
 client.on('message', message => { 
@@ -201,7 +175,7 @@ client.on('message', message => {
 	}
 
                       //Command Start
-	if(message.guild === null){ //Sentience
+	if(message.channel.type === null){ //Sentience
 		msgDM = message;
 		if(message.author.id === '139548522377641984'){
 			try{
@@ -265,15 +239,6 @@ client.on('message', message => {
 		}
 		
 		switch(args[0].toLowerCase()){
-			case prefix + 'help':
-				help(message);
-				break;
-			case prefix + 'helpmusic':
-				helpMusic(message);
-				break;
-			case prefix + 'helpadministrator':
-				helpAdmin(message);
-				break;
 			case prefix + 'prefix':
 				message.channel.send(prefix);
 				break;
@@ -281,11 +246,9 @@ client.on('message', message => {
 				message.channel.send('Dragonite v' + version);
 				break;
 			//Voice Channel stuff
-			case prefix + 'skip': //skips song
-				if(servers[message.guild.id].dispatcher) {servers[message.guild.id].dispatcher.end();}
-				break;
 
 			case prefix + 'stop': //removes bot
+				if(!message.member.hasPermission("MANAGE_GUILD")) {message.reply('You do not have perms to use the Stop command!'); return;}
 				if(message.guild.voiceConnection){
 					servers[message.guild.id].queue = null;
 					message.guild.voiceConnection.disconnect();
@@ -301,55 +264,14 @@ client.on('message', message => {
 			case prefix + 'unpause':
 				if(message.guild.voiceConnection.dispatcher) message.guild.voiceConnection.dispatcher.resume();
 				break;
-
-			case prefix + 'volume': //sets volume
-				if(!args[1]){message.channel.send("Please give a volume out of 100");
-					return;}
-				
-				if(!args[1].match(/^[0-9]+$/)){
-					message.channel.send("Not a valid integer");
-					return;
-				}
-				
-				if(args[1] > 100 || args[1] < 0){
-					message.channel.send("Please set a number between 0 and 100");
-					return;
-				}
-				
-				db.run('UPDATE servers SET volume=' + args[1] + ' WHERE serverid=' + message.guild.id);
-				servers[message.guild.id].volume = args[1]/100;
-				try{
-					servers[message.guild.id].dispatcher.setVolume(args[1]/100);
-				}catch(err){
-					console.log(err);
-				}
-				break;
-
 			case prefix + 'np':
 			case prefix + ('nowplaying'):
-				if(!servers[message.guild.id].isPlaying){
-					message.channel.send('Currently not playing anything');
-					break;
-				} else {
-					const info = ytdl.getInfo(server.queue[0].url)
-						.then(info => {
-							var optionsEmbed = new Discord.MessageEmbed()
-								.setColor('#E81F2F')
-								.setTitle(servers[message.guild.id].queue[0].title)
-								.setThumbnail(info.iurl)
-								.setAuthor('Now playing')
-								.setURL(servers[message.guild.id].queue[0].url)
-								.addField('Author', servers[message.guild.id].queue[0].author)
-								.addField('Progress', prettyMs(server.dispatcher.time, {secDecimalDigits: 0}) + ' / ' + prettyMs(server.queue[0].time, {secDecimalDigits: 0}));
-						
-							message.channel.send({embed : optionsEmbed});
-						});
-					break;
-				}
+				runOtherEvent('nowPlaying', message);
+				break;
 			default:
 				try {
 					let commandArg = args[0].split(prefix);
-					let commandFile = require(`./events/${commandArg[1]}.js`);
+					let commandFile = require(`./${checkLocation}/${commandArg[1]}.js`);
 					commandFile.run(client, message, args, isBeta, db);
 				} catch (err){
 					//message.channel.send('That is not a command');
@@ -358,6 +280,7 @@ client.on('message', message => {
 		}
 	}
 })
+
 
 module.exports = { servers : servers };
 module.exports.tokens = function(){
