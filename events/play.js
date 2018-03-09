@@ -18,7 +18,7 @@ exports.run = async (client, message, args, isBeta, db) => {
         return;
     }
 
-	if((args[1].indexOf('www.') < 0) && (args[1].indexOf('soundcloud') < 0)){
+	if((args[1].indexOf('youtube') < 0) && (args[1].indexOf('youtu.be') < 0)){
 		message.channel.send('Please provide a link');
 		return;
 	}
@@ -47,13 +47,15 @@ exports.run = async (client, message, args, isBeta, db) => {
 		//}
 	
         if(args[1].indexOf("playlist?list=") >= 0){
+			let songErrorCount = 0;
             let playlistID = args[1].split('=');
+			message.channel.send('Waiting to get information for playlist, please wait a minute or two fpr the music to start');
             var playlist = requestPlaylist(playlistID, ytkey, '', server, message);
-			
+
             function requestPlaylist(playlistID, ytkey, nextPageToken, server, message){
                 request("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=" + playlistID[1] + "&key=" + ytkey + "&pageToken=" + nextPageToken, async (error, reponse, body) => {
                     var playlist = JSON.parse(body);
-					message.channel.send('Waiting to get information for playlist, please wait a minute or two');
+
                     if('error' in playlist){
                         message.channel.send('Error getting playlist');
                         return;
@@ -77,8 +79,7 @@ exports.run = async (client, message, args, isBeta, db) => {
 									return;
 								}
 							}catch(e){
-								console.log(e);
-								message.channel.send('Error adding song');
+								songErrorCount++;
 								continue;
 							}
 							
@@ -93,6 +94,9 @@ exports.run = async (client, message, args, isBeta, db) => {
                         requestPlaylist(playlistID, ytkey, nextPageToken, server, message);
                         return;
                     } else {
+						if(songErrorCount >= 0 ) {
+							message.channel.send(songErrorCount + ' errors adding songs to the queue');
+						}
                         message.channel.send('Playlist imported to queue');
 						
                     }
@@ -108,6 +112,13 @@ exports.run = async (client, message, args, isBeta, db) => {
 				channel: message.channel,
 				time: info.length_seconds * 1000
             }
+			
+			if(args[2] && (args[2].indexOf('h|s|m|:') != 1)){
+				song.begin = args[2];
+			} else {
+				song.begin = 0;
+			}
+			
             server.queue.push(song);
         
             message.channel.send(song.title + ' by ' + song.author + ' added to queue');
