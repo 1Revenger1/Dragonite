@@ -1,6 +1,6 @@
 const ytdl = require('ytdl-core');
 const SC = require('node-soundcloud');
-var ytkey = 'AIzaSyCJ5oL897AnJ6-TNzP_8C-kJZOoICv_5jE'; //Change to server specefic if added to more servers.
+var ytkey = 0; //Change to server specefic if added to more servers.
 const request = require('request');
 
 exports.run = async (client, message, args, isBeta, db) => {
