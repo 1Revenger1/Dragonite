@@ -21,7 +21,6 @@ var prefix = '!!';
 var version = '0.6.5';
 var versionBeta = '.1';
 var checkLocation;
-var pages;
 var isBeta = false;
 
 var myArgs = process.argv.slice(2);
@@ -42,11 +41,7 @@ switch(myArgs[0]){
 		checkLocation = 'eventsBeta';
 		break;
 }
-
-var tempStorage = {};
 //ID, musicChannel, logChannel
-
-var servers = {};
 
 var isTakingCommands = false;
 
@@ -86,10 +81,16 @@ db.serialize(function() {
 
 
 client.on('ready', () => {
+	bot.commands = new Discord.Collection();
+	bot.aliases = new Discord.Collection();
+	bot.servers = {};
+
 	moment().tz("America/Los_Angeles").format();
 	db.serialize(function() {
 		db.each("SELECT serverid, prefix, volume, levelsEnabled, levelsAnnounceInDM, levelUpMsg, roleIDs, selfAssignOn FROM servers", function(err, row) {
-			servers[row.serverid] = {
+			var server = bot.servers[row.serverid];
+
+			server = {
 				prefix: row.prefix,
 				volume: row.volume/100,
 				levelsEnabled: row.levelsEnabled,
@@ -98,40 +99,45 @@ client.on('ready', () => {
 				selfAssignOn: row.selfAssignOn,
 				defaultMusic: null
 			}
+
 			if(isBeta){
-				servers[row.serverid].prefix = '??b';
+				server.prefix = '??b';
 			}
 
 			if(row.defaultMusicID && client.guilds.exists('id', row.serverid)){
 				try{
-					servers[row.serverid].defaultMusic = client.guilds.get(row.serverid).channels.find('id', row.defaultMusicID);
+					server.defaultMusic = client.guilds.get(row.serverid).channels.find('id', row.defaultMusicID);
 				} catch(err){
-					servers[row.serverid].defaultMusic = 'No music channel selected';
+					server.defaultMusic = 'No music channel selected';
 				}
 			} else {
-				servers[row.serverid].defaultMusic = 'No music channel selected';
+				server.defaultMusic = 'No music channel selected';
 			}
 			
 			if(row.roleIDs && client.guilds.exists('id', row.serverid)){
-				servers[row.serverid].roles = [];
+				server.roles = [];
 				let roleIDs = row.roleIDs.split(" ");
 				for(var i = 0; i < roleIDs.length - 1; i++){
 					//console.log(client.guilds.get('363798742857678859').name);
 					//console.log(servers[row.serverid]);
-					servers[row.serverid].roles[i] = client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
+					server.roles[i] = client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
 				}
 			} else {
-				servers[row.serverid].roles = [];
-				servers[row.serverid].selfAssignOn = 'false';
+				server.roles = [];
+				server.selfAssignOn = 'false';
 			}
+
 		}, function(err, rows) {
 			fs.readdir("./events/", (err, files) => {
 				if (err) return console.error(err);
+				console.log(`Loading ${files.length} commands!`);
 				files.forEach(file => {
-					console.log(file);
-					let eventFunction = require(`./${checkLocation}/${file}`);
-					let eventName = file.split(".")[0];
-					client.on(eventName, (...args) => eventFunction.run(client, ...args));
+					var name = require(`./${checkLocation}/${file}`).name;
+					//let eventName = file.split(".")[0];
+					bot.commands.set(name, require(`./${checkLocation}/${file}`));
+					require(`./${checkLocation}/${file}`).aliases.forEach(alias => {
+						bot.aliases.set(alias, name);
+					});
 				});
 				console.log('I am ready!');
 				setInterval(changeGame, 10000);
@@ -142,6 +148,7 @@ client.on('ready', () => {
 });
 
 client.on('guildCreate', guild => {
+	var server = bot.servers[guild.id];
 	db.get("SELECT serverid FROM servers WHERE serverid = " + guild.id, function(err, row){
 		if(row != undefined){
 			return;
@@ -149,16 +156,16 @@ client.on('guildCreate', guild => {
 			db.run("INSERT INTO servers (serverid, volume) VALUES(" + guild.id +", 50)");
 	
 			if(isBeta){
-				servers[guild.id] = {
+				server = {
 					prefix: '??b'
 				};
 			}
 
-			servers[guild.id] = {
+			server = {
 				prefix: '??'
 			}
 			
-			servers[guild.id].defaultMusic = "No music channel selected";
+			server.defaultMusic = "No music channel selected";
 			db.run("UPDATE servers SET defaultMusicID=null WHERE serverid = " + guild.id);
 		}
 	});
@@ -180,20 +187,21 @@ client.on('message', message => {
 
     //Command Start
 	if(message.channel.type == 'dm'){ //Sentience
-		msgDM = message;
 		if(message.author.id == '139548522377641984'){
 			try{
-				currentChannel.send(msgDM.content);
+				currentChannel.send(message.content);
 				return;
 			} catch(err) {
 				message.channel.send('You haven\'t typed in a guild yet you dumbo!');
 				return;
 			}
 
+		} else {
+			message.channel.send("Dragonite should not be used through DMs");
 		}
 
 	}else { //Everything else
-		server = servers[message.guild.id];  
+		server = bot.servers[message.guild.id];  
 		/*if(!server.users[message.member.discriminator]){
 			server.users[message.member.discriminator] = {
 				exp: 0,
@@ -213,8 +221,8 @@ client.on('message', message => {
 			}
 		}*/
 
-		if(servers[message.guild.id].prefix){
-			prefix = servers[message.guild.id].prefix;
+		if(server.prefix){
+			prefix = server.prefix;
 		}
 
 		if(message.author.id == '139548522377641984'){
@@ -223,7 +231,7 @@ client.on('message', message => {
 
 		let args = message.content.split(" ");
 		if((args[0].toLowerCase() == '??' + 'changeprefix') && (message.member.hasPermission('ADMINISTRATOR'))){
-			servers[message.guild.id].prefix = args[1];
+			server.prefix = args[1];
 			db.run('UPDATE servers SET prefix=\'' + args[1] + '\' WHERE serverid = ' + message.guild.id);
 			message.channel.send('Used default prefix to set server prefix to ' + servers[message.guild.id].prefix);
 			return;
