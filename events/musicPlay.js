@@ -19,7 +19,7 @@ exports.run = (client, message, args, isBeta, db, isPlayBot) => {
         server.isPlaying = true;
 		
 		try{
-            server.dispatcher = server.Vconnection.playStream(ytdl(server.queue[0].url, {begin: server.queue[0].begin}));
+            server.dispatcher = server.Vconnection.play(ytdl(server.queue[0].url, {begin: server.queue[0].begin}));
 			server.dispatcher.setVolume(server.volume);
 			server.queue[0].loop = 0;
 			server.queue[0].channel.send('Now playing ' + server.queue[0].title);

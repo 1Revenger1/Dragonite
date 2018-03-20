@@ -14,8 +14,8 @@ exports.run = (client, message, args, isBeta, db) => {
         var optionsEmbed = new Discord.MessageEmbed()
             .setColor('#E81F2F')
             .setAuthor('Options for ' + message.guild.name, message.guild.iconURL)
-            .addField('Self-Assignable Roles (\'role\')', 'Enabled: ' + rolesOn + '\nHas permission \'MANAGE_ROLES\': ' + client.guilds.get(message.guild.id).me.hasPermission("MANAGE_ROLES"))
-			.addField('Forced Music Channel (\'musicChannel\')', 'Status: ' + musicChannel + '\n\nYou set this by doing options musicChannel <name of channel> or turn it off by doing option musicChannel off');
+            .addField('Self-Assignable Roles (\'role\')', 'Enabled: ' + (rolesOn == "true" ? ":white_check_mark:" : ":x:")  + '\nHas permission \'MANAGE_ROLES\': ' + (client.guilds.get(message.guild.id).me.hasPermission("MANAGE_ROLES") == true ? ":white_check_mark:" : ":x:"))
+			.addField('Forced Music Channel (\'musicChannel\')', 'Status: ' + musicChannel + '\n\nNote: You set the music channel by doing `??options musicChannel <name of channel>`. This can be turned off by doing `??option musicChannel off`');
 
         message.channel.send({embed : optionsEmbed});
     }   
@@ -37,7 +37,8 @@ exports.run = (client, message, args, isBeta, db) => {
 		}
 		
         callOptionsEmbed(rolesOn, musicChannel);
-        message.channel.send("Use \"" + server.prefix + "options (name in Parenthesis) (true or false)\" to turn that option on or off");
+        message.channel.send("Use \"" + server.prefix + "options (name in paranthesis) (true or false)\" to turn that option on or off\n" +
+								"Example: `??options role true`");
         return;
     }
     
@@ -70,6 +71,7 @@ exports.run = (client, message, args, isBeta, db) => {
 			}
 			break;
 		case "logging":
+			message.channel.send("Not implemented yet");
 			break;
         default:
             message.channel.send("That is not an option you can set.");

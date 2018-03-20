@@ -30,8 +30,6 @@ exports.run = async(client, message, args, isBeta, db) => {
 	let isDisplay = (args[1].toLowerCase() == 'display');
 	let startValue = 1;
 	
-	console.log(isDisplay);
-	
 	if(isDisplay){
 		startValue++;
 	}
@@ -58,15 +56,18 @@ exports.run = async(client, message, args, isBeta, db) => {
 		let info = await ytdl.getInfo("www.youtube.com/watch?v=" + results.items[0].id.videoId);
 		
 		if(isDisplay){
-			var searchEmbed = new Discord.MessageEmbed()
-					.setColor('#E81F2F')
-					.setTitle(info.title)
-					.setImage(info.thumbnail_url)
-					.setAuthor('Search result')
-					.setURL("https://www.youtube.com/watch?v=" + results.items[0].id.videoId)
-					.addField('Author', info.author.name)
-					.addField('Length', prettyMs(info.length_seconds * 1000));		
-			message.channel.send({embed : searchEmbed});
+			try {
+				const newt = info.thumbnail_url.replace("default", "maxresdefault");
+				await request(newt, async(error, response, body) => {
+					info.thumbnail = error ? info.thumbnail_url.replace("default", "hqdefault") : newt;
+					createEmbed(info, results.items[0].id.videoID, message);
+				});
+			} catch(e) {
+				info.thumbnail = info.thumbnail_url.replace("default", "hqdefault");
+				createEmbed(info, results.items[0].id.videoID, message);
+			}
+			
+
 		} else {
 			server.queue.push(song = {
 				url: "https://www.youtube.com/watch?v=" + results.items[0].id.videoId,
@@ -79,4 +80,17 @@ exports.run = async(client, message, args, isBeta, db) => {
 			require(`./musicPlay.js`).run(client, message, args, isBeta, db, true);
 		}			
     });
-}  
+} 
+
+function createEmbed(info, videoID, message){
+	var searchEmbed = new Discord.MessageEmbed()
+		.setColor('#E81F2F')
+		.setTitle(info.title)
+		.setImage(info.thumbnail)
+		.setAuthor('Search result')
+		.setURL("https://www.youtube.com/watch?v=" + videoID)
+		.addField('Author', info.author.name)
+		.addField('Length', prettyMs(info.length_seconds * 1000));		
+	message.channel.send({embed : searchEmbed});
+}
+

@@ -13,7 +13,7 @@ const moment = require('moment-timezone');
 
 const loginLocation = `../../../login.js`;
 
-var db = new sqlite3.Database('database.txt')
+const db = new sqlite3.Database('database.txt')
 
 const Tokens = require(loginLocation);
 
@@ -71,14 +71,17 @@ function changeGame() {
 }
 
 db.serialize(function() {
-	db.run("CREATE TABLE IF NOT EXISTS servers(serverid TEXT, prefix TEXT DEFAULT '??', volume TEXT DEFAULT 0.5, levelsEnabled TEXT DEFAULT false, levelsEnabled TEXT DEFAULT false, levelsAnnounceInDM TEXT DEFAULT false, levelupMsg TEXT DEFAULT 'Congrats, you have leveled up!', roleIDs TEXT, selfAssignOn TEXT DEFAULT false)");
-	/*db.run("ALTER TABLE servers ADD COLUMN levelsEnabled");
+	db.run("CREATE TABLE IF NOT EXISTS servers(serverid TEXT, prefix TEXT DEFAULT '??', volume TEXT DEFAULT 50, levelsEnabled TEXT DEFAULT false, levelsEnabled TEXT DEFAULT false, levelsAnnounceInDM TEXT DEFAULT false, levelupMsg TEXT DEFAULT 'Congrats, you have leveled up!', roleIDs TEXT, selfAssignOn TEXT DEFAULT false)");
+	
+	/*
+	db.run("ALTER TABLE servers ADD COLUMN levelsEnabled");
 	db.run("Alter Table servers ADD COLUMN levelsAnnounceInDM");
 	db.run("ALTER TABLE servers ADD COLUMN levelUpMsg");
 	db.run("ALTER TABLE servers ADD COLUMN roleIDs");
 	db.run("ALTER TABLE servers ADD COLUMN selfAssignOn");
 	db.run("ALTER TABLE servers ADD COLUMN defaultMusicID");
 	*/
+
 });
 
 
@@ -275,7 +278,7 @@ client.on('message', message => {
 					let commandFile = require(`./${checkLocation}/${commandArg[1]}.js`);
 					commandFile.run(client, message, args, isBeta, db);
 				} catch (err){
-					console.log(err);
+					//console.log(err);
 					//message.channel.send('That is not a command');
 				}
 				break;
@@ -283,7 +286,7 @@ client.on('message', message => {
 	}
 })
 
-client.on('error', error => {
+process.on('error', error => {
 	var stream = fs.createWriteStream('ConnectionError.log');
 	stream.once('open', fd => {
 		stream.write(moment().format() + ":" + error.name + " -> " + error.message);

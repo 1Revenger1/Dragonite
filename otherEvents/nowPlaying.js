@@ -22,7 +22,7 @@ exports.run = (client, message, isBeta, db) => {
 				var progressString = '    | ';
 				var x = 0;
 				
-				for(var i = 0; i < Math.round(server.dispatcher.time / server.queue[0].time * 10); i++){
+				for(var i = 0; i < Math.round(server.dispatcher.streamTime / server.queue[0].time * 10); i++){
 					progressString += '\u258A';
 					x++;
 				}
@@ -40,7 +40,7 @@ exports.run = (client, message, isBeta, db) => {
 					.setAuthor('Now playing')
 					.setURL(server.queue[0].url)
 					.addField('Author', server.queue[0].author)
-					.addField('Progress', prettyMs(server.dispatcher.time, {secDecimalDigits: 0}) + ' / ' + prettyMs(server.queue[0].time, {secDecimalDigits: 0})
+					.addField('Progress', prettyMs(server.dispatcher.streamTime, {secDecimalDigits: 0}) + ' / ' + prettyMs(server.queue[0].time, {secDecimalDigits: 0})
 						+ progressString);
 					
 

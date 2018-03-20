@@ -19,9 +19,14 @@ exports.run = (client, message, args, isBeta, db) => {
             message.channel.send("No roles are assigned yet to be given out! Use " + server.prefix + "addRole <Name of role>");
             return;
         }
+		
+		msg += "```diff";
         for(var i = 0; i < server.roles.length; i++){
-            msg += "\n" + server.roles[i].name;
+            msg += "\n- " + server.roles[i].name;
         }
+		
+		msg += "```\n";
+		
         msg += "\nYou can assign these roles by using " + server.prefix + "role <name of role>";
         message.channel.send(msg);
     } else {
@@ -46,6 +51,10 @@ exports.run = (client, message, args, isBeta, db) => {
         }
         if(isRole == true){
             try{
+				if(message.member.roles.has(roleToGive.id)){
+					message.channel.send(message.member.displayName + " already has ```diff\n- " + roleToGive.name + "```");
+					return;
+				}
                 message.member.addRole(roleToGive , "The user requested the role");
                 message.channel.send("Giving " + roleToGive.name + " to " + message.member.displayName);
             } catch(err) {
