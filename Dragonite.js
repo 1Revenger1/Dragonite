@@ -10,6 +10,13 @@ const loginLocation = `../../../login.js`;
 
 const Tokens = require(loginLocation);
 
+const levels = {
+	level_0: "Level 0 : Everyone",
+	level_1: "MANAGE_ROLES",
+	level_2: "MANAGE_GUILD",
+	level_3: "Level 3 : Owner"
+}
+
 bot.version = '0-v7.0.0';
 bot.versionBeta = '.1';
 bot.checkLocation;
@@ -45,7 +52,7 @@ function changeGame() {
 		return;
 	}
 	if(timer === 1){
-		client.user.setActivity('Default prefix is ??');
+		client.user.setActivity('Use "@Dragonite help" for commands');
 		timer = 2;
 		return;
 	}
@@ -108,8 +115,6 @@ bot.client.on('ready', () => {
 				server.roles = [];
 				let roleIDs = row.roleIDs.split(" ");
 				for(var i = 0; i < roleIDs.length - 1; i++){
-					//console.log(client.guilds.get('363798742857678859').name);
-					//console.log(servers[row.serverid]);
 					server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
 				}
 			} else {
@@ -120,9 +125,9 @@ bot.client.on('ready', () => {
 		}, function(err, rows) {
 			fs.readdir("./events/", (err, files) => {
 				if (err) return console.error(err);
-				console.log(`Loading ${files.length} commands!`);
+				console.log("Loading " + files.length + " commands!");
 				files.forEach(file => {
-					var name = require(`./${checkLocation}/${file}`).name;
+					var name = require(`./${checkLocation}/${file}`).name.toLowerCase();
 					bot.commands.set(name, require(`./${checkLocation}/${file}`));
 					require(`./${checkLocation}/${file}`).aliases.forEach(alias => {
 						bot.aliases.set(alias, name);
@@ -206,20 +211,48 @@ bot.client.on('message', message => {
 			}
 		}*/
 
+		//Edge case so that users can mention dragonite to get the prefix
+		if(message.content.toLowerCase().indexOf('<@363478897729339392>') !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1){
+			message.channel.send('Use "@Dragonite help" to see prefix and get help for commands');
+			return;
+		}
+
+		//Sentience stuff
 		if(message.author.id == '139548522377641984'){
 			currentChannel = message.channel;
 		}
 
 		let args = message.content.split(" ");
 		
+		//Stop running if Dragonite isn't mentioned or the prefix isn't used
 		if(args[0].substring(0, prefix.length) != prefix || args[0] != message.guild.me.toString()){
 			return;
 		}
 		
 		try {
-			var commandArg = (args[0] == message.guild.me.toString()) ? args[1] : args[0].replace(prefix, "");
+			//Get the command name itself
+			var commandArg = (args[0] == message.guild.me.toString()) ? args[1].toLowerCase() : args[0].replace(prefix, "").toLowerCase();
+			
+			//Check for aliases, and set commandArg to the full name if there are aliases
 			if(bot.aliases.has(commandArg)) commandArg = bot.aliases.get(commandArg);
-			bot.commands.get(commandArg).run(bot, message, args);
+
+			var command = bot.commands.get(commandArg);
+
+			//Check permissions to make sure the user can run the command
+			if(command.permLevel && command.permLevel != Levels.level_0){
+				if(command.permLevel == Levels.level_3 && message.member.id != '139548522377641984'){
+					message.channel.send("This can only be run by the bot owner, 1Revenger1");
+					return;
+				}
+
+				if(!message.guild.user.hasPermission(command.permLevel)){
+					message.channel.send("This can only be run by someone with the `" + command.permLevel + "` permission");
+					return;
+				}
+			}
+
+			//Run the command
+			command.run(bot, message, args);
 		} catch (err){
 			return;
 		}
@@ -235,7 +268,8 @@ bot.client.on('error', error => {
 	});
 });
 
-module.exports = { servers : servers };
+module.exports = { servers : servers,
+				   levels : levels };
 module.exports.tokens = function(){
 	return Tokens;
 }
