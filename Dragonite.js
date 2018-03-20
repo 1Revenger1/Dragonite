@@ -229,6 +229,8 @@ client.on('message', message => {
 			currentChannel = message.channel;
 		}
 
+		//TODO: Work on putting these into files, they shouldn't just be here.
+
 		let args = message.content.split(" ");
 		if((args[0].toLowerCase() == '??' + 'changeprefix') && (message.member.hasPermission('ADMINISTRATOR'))){
 			server.prefix = args[1];
