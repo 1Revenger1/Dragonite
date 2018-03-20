@@ -182,7 +182,7 @@ bot.client.on('message', message => {
 				currentChannel.send(message.content);
 				return;
 			} catch(err) {
-				message.channel.send('You haven\'t typed in a guild yet you dumbo!');
+				message.channel.send('Error - Have you tried typing in a text channel?');
 				return;
 			}
 
@@ -192,24 +192,6 @@ bot.client.on('message', message => {
 
 	}else { //Everything else
 		server = bot.servers[message.guild.id];
-		/*if(!server.users[message.member.discriminator]){
-			server.users[message.member.discriminator] = {
-				exp: 0,
-				level: 0,
-				lastMessage: 0
-			}
-		}
-	
-		if(message.createdTimestamp - server.users[message.member.discriminator].lastMessage > 1000 && server.levelsEnabled == "true"){
-			server.users[message.member.discriminator].lastMessage = message.createdTimestamp;
-			server.users[message.member.discriminator].exp += (Math.random * 10) + 15;
-			if(server.users[message.member.discriminator].exp >= 5 * Math.pow(server.users[message.member.discriminator].level), 3 / 5){
-				server.users[message.member.discriminator].level++;
-				if(server.levelsAnnounceInLevels == true){
-					message.channel.reply('Congrats, you have leveled up to ' + '')
-				}
-			}
-		}*/
 
 		//Edge case so that users can mention dragonite to get the prefix
 		if(message.content.toLowerCase().indexOf('<@363478897729339392>') !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1){
