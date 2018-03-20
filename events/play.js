@@ -1,6 +1,6 @@
 const ytdl = require('ytdl-core');
 const SC = require('node-soundcloud');
-var ytkey = 'AIzaSyCJ5oL897AnJ6-TNzP_8C-kJZOoICv_5jE'; //Change to server specefic if added to more servers.
+var ytkey = 0; //Change to server specefic if added to more servers.
 const request = require('request');
 
 exports.run = async (client, message, args, isBeta, db) => {
@@ -63,40 +63,40 @@ exports.run = async (client, message, args, isBeta, db) => {
                         message.channel.send('The playlist is empty!');
                         return;
                     } else {
-						for(let i = 0; i < playlist.items.length; i++){
-							try{
-								const info = await ytdl.getInfo("https://www.youtube.com/watch?v=" + playlist.items[i].snippet.resourceId.videoId);
-								var song = {
-									url: "https://www.youtube.com/watch?v=" + playlist.items[i].snippet.resourceId.videoId,
-									title: playlist.items[i].snippet.title,
-									author: info.author.name,
-									channel: message.channel,
-									time: info.length_seconds * 1000
-								}
-								if(server.queue){ //If ??stop is used before the queue import is finshed, stop queue import.
-									server.queue.push(song);
-								} else {
-									return;
-								}
-							}catch(e){
-								songErrorCount++;
-								continue;
-							}
-							
+			for(let i = 0; i < playlist.items.length; i++){
+				try{
+					const info = await ytdl.getInfo("https://www.youtube.com/watch?v=" + playlist.items[i].snippet.resourceId.videoId);
+					var song = {
+						url: "https://www.youtube.com/watch?v=" + playlist.items[i].snippet.resourceId.videoId,
+						title: playlist.items[i].snippet.title,
+						author: info.author.name,
+						channel: message.channel,
+						time: info.length_seconds * 1000
+					}
+					
+					if(server.queue){ //If ??stop is used before the queue import is finshed, stop queue import.
+						server.queue.push(song);
+					} else {
+						return;
+					}
+				}catch(e){
+					songErrorCount++;
+					continue;
+				}			
 
-							if(i > 5){
-								require(`./musicPlay.js`).run(client, message, args, isBeta, db, true);
-							}
-						} 
+				if(i > 5){
+					require(`./musicPlay.js`).run(client, message, args, isBeta, db, true);
+				}
+			} 
                     }
                     nextPageToken = playlist.nextPageToken;
                     if(nextPageToken != undefined){
                         requestPlaylist(playlistID, ytkey, nextPageToken, server, message);
                         return;
                     } else {
-						if(songErrorCount >= 0 ) {
-							message.channel.send(songErrorCount + ' errors adding songs to the queue');
-						}
+			if(songErrorCount >= 0 ) {
+				message.channel.send(songErrorCount + ' errors adding songs to the queue');
+			}
                         message.channel.send('Playlist imported to queue');
 						
                     }
@@ -109,15 +109,15 @@ exports.run = async (client, message, args, isBeta, db) => {
                 url: args[1],
                 title: info.title,
                 author: info.author.name,
-				channel: message.channel,
-				time: info.length_seconds * 1000
+		channel: message.channel,
+		time: info.length_seconds * 1000
             }
 			
-			if(args[2] && (args[2].indexOf('h|s|m|:') != 1)){
-				song.begin = args[2];
-			} else {
-				song.begin = 0;
-			}
+	    if(args[2] && (args[2].indexOf('h|s|m|:') != 1)){
+		song.begin = args[2];
+	    } else {
+		song.begin = 0;
+	    }
 			
             server.queue.push(song);
         
