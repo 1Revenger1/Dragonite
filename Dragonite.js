@@ -110,7 +110,7 @@ bot.client.on('ready', () => {
 			} else {
 				server.defaultMusic = 'No music channel selected';
 			}
-			
+
 			if(row.roleIDs && bot.client.guilds.exists('id', row.serverid)){
 				server.roles = [];
 				let roleIDs = row.roleIDs.split(" ");

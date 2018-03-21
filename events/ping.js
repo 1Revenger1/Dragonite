@@ -1,6 +1,8 @@
 module.exports = {
     name: "ping",
     aliases: [],
+    helpDesc: "Return Dragonite\'s response time",
+    helpTitle: "Ping",
     run: async (bot, message, args) => {
         var dragonite = null;
         if(bot.isBeta){
@@ -9,7 +11,7 @@ module.exports = {
             dragonite = `../Dragonite.js`;
         }
     
-        const server = require(dragonite).bot.servers[message.guild.id];
+        const server = bot.servers[message.guild.id];
         var ping1 = message.createdTimestamp;
         message.channel.send('Pinging...').then((msg) =>{
             var ping2 = msg.createdTimestamp - ping1;

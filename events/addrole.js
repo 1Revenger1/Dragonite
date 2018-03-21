@@ -2,11 +2,14 @@ const Discord = require('discord.js');
 module.exports = {
     name: "addrole",
     aliases: [],
+    helpDesc: "Add roles to Dragonite's list of roles that it is able to give people",
+    helpTitle: "addRole <name of role>",
+    cat: "admin",
     permLevel: require(`../Dragonite.js`).levels.level_1,
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
     
-        const server = require(dragonite).bot.servers[message.guild.id];
+        const server = bot.servers[message.guild.id];
         
         if(server.selfAssignOn == 'true'){
             message.channel.send("Self Assignable Roles are not enabled on this server! Please turn it on using " + server.prefix + "options");

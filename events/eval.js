@@ -1,12 +1,16 @@
 const Discord = require('discord.js');
 module.exports = {
     name: "eval",
-    aliases: [],
+    aliases: [],    
+    helpDesc: "Debugging for 1Revenger1",
+    helpTitle: "Eval",
+    cat: "admin",
+    ignore: true,
     permLevel: require(`../Dragonite.js`).levels.level_3,
     run: async (bot, message, args) => {
         dragonite = `../Dragonite.js`;
     
-        const server = require(dragonite).bot.servers[message.guild.id];
+        const server = bot.servers[message.guild.id];
         var evalArgs = '';
         for(var i = 1; i < args.length; i++){
             evalArgs += args[i] + " ";
