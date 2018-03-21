@@ -1,28 +1,21 @@
 const Discord = require('discord.js');
-
-exports.run = async(client, message, args, isBeta, db) => {
-    var dragonite = null;
-    if(isBeta){
-        dragonite = `../DragoniteBeta.js`;
-    } else {
+module.exports = {
+    name: "eval",
+    aliases: [],
+    permLevel: require(`../Dragonite.js`).levels.level_3,
+    run: async (bot, message, args) => {
         dragonite = `../Dragonite.js`;
-    }
-
-    const server = require(dragonite).servers[message.guild.id];
     
-    if(message.author.id != '139548522377641984'){
-		message.channel.send('You are not the developer...');
-		return;
-	}
-	var searchTerm = '';
-    for(var i = 1; i < args.length; i++){
-        searchTerm += args[i] + " ";
-    }
-	
-	
-	try {
-      return message.channel.send(`\`\`\`js\n${eval(searchTerm)}\n\`\`\``);
-    } catch (e) {
-      return message.channel.send(`\`\`\`js\n${e.stack}\n\`\`\``);
+        const server = require(dragonite).bot.servers[message.guild.id];
+        var evalArgs = '';
+        for(var i = 1; i < args.length; i++){
+            evalArgs += args[i] + " ";
+        }
+        
+        try {
+          return message.channel.send(`\`\`\`js\n${eval(evalArgs)}\n\`\`\``);
+        } catch (e) {
+          return message.channel.send(`\`\`\`js\n${e.stack}\n\`\`\``);
+        }    
     }
 }

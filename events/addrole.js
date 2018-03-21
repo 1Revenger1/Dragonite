@@ -1,24 +1,25 @@
-exports.run = (client, message, args, isBeta, db) => {
-    var dragonite = null;
-    if(isBeta){
-        dragonite = `../DragoniteBeta.js`;
-    } else {
-        dragonite = `../Dragonite.js`;
-    }
-
-    const server = require(dragonite).servers[message.guild.id];
+const Discord = require('discord.js');
+module.exports = {
+    name: "addrole",
+    aliases: [],
+    permLevel: require(`../Dragonite.js`).levels.level_1,
+    run: async (bot, message, args) => {
+        var dragonite = `../Dragonite.js`;
     
-    if(!(server.selfAssignOn == 'true')){
-        message.channel.send("Self Assignable Roles are not enabled on this server! Please ask an administrator to turn it on using " + server.prefix + "options");
-        return;
-    }
-    if(message.member.hasPermission('ADMINISTRATOR')){
+        const server = require(dragonite).bot.servers[message.guild.id];
+        
+        if(server.selfAssignOn == 'true'){
+            message.channel.send("Self Assignable Roles are not enabled on this server! Please turn it on using " + server.prefix + "options");
+            return;
+        }
+        
         var roleArg = "";
         for(var i = 1; i < args.length; i++){
-            roleArg += args[i] + " ";
+              roleArg += args[i] + " ";
         }
+
         roleArg = roleArg.trim();
-        if(!message.guild.roles.exists('name', roleArg)){
+        if(!(await bot.checkRoleExists("name", roleArg, message.guild))){
             message.channel.send("Role does not exist");
             return;
         }
@@ -29,15 +30,14 @@ exports.run = (client, message, args, isBeta, db) => {
                 return;
             }
         }
-
-        server.roles[server.roles.length] = message.guild.roles.find('name', roleArg);
+    
+        server.roles[server.roles.length] = await bot.getRole("name", roleArg, message.guild);
         message.channel.send(roleArg + " added to the available roles users can add.");
         var dbInsert = "";
         for(var i = 0; i < server.roles.length; i++){
             dbInsert += server.roles[i].id + " ";
         }
-        db.run("UPDATE servers SET roleIDs =\'" + dbInsert + "\' WHERE serverid = " + message.guild.id);
-    } else {
-        message.channel.send("You do not have the perms to use this command.");
+
+        bot.db.run("UPDATE servers SET roleIDs =\'" + dbInsert + "\' WHERE serverid = " + message.guild.id);
     }
 }

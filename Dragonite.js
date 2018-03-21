@@ -24,17 +24,17 @@ bot.isBeta = false;
 
 var myArgs = process.argv.slice(2);
 switch(myArgs[0]){
-	case '-r': client.login(Tokens.releaseToken());
+	case '-r': bot.client.login(Tokens.releaseToken());
 		bot.isBeta = false;
 		bot.version = bot.version + ' Release';
 		bot.checkLocation = 'events';
 		break;
-	case '-b': client.login(Tokens.betaToken());
+	case '-b': bot.client.login(Tokens.betaToken());
 		bot.version = bot.version + bot.versionBeta + ' Beta';
 		bot.isBeta = true;
 		bot.checkLocation = 'eventsBeta';
 		break;
-	case '-c': client.login(Tokens.betaToken());
+	case '-c': bot.client.login(Tokens.betaToken());
 		bot.version = bot.version + ' Release Canidate';
 		bot.isBeta = true;
 		bot.checkLocation = 'eventsBeta';
@@ -47,24 +47,24 @@ var timer = 0;
 
 function changeGame() {
 	if(timer === 0){
-		client.user.setActivity('with other sentient bots...what?');
+		bot.client.user.setActivity('with other sentient bots...what?');
 		timer = 1;
 		return;
 	}
 	if(timer === 1){
-		client.user.setActivity('Use "@Dragonite help" for commands');
+		bot.client.user.setActivity('Use "@Dragonite help" for commands');
 		timer = 2;
 		return;
 	}
 	if(timer === 2){
-		client.user.setActivity('I\'m in ' + Object.keys(servers).length + ' guilds!');
+		bot.client.user.setActivity('I\'m in ' + Object.keys(bot.servers).length + ' guilds!');
 		timer = 0;
 		return;
 	}
 }
 
-client.db.serialize(function() {
-	client.db.run("CREATE TABLE IF NOT EXISTS servers(serverid TEXT, prefix TEXT DEFAULT '??', volume TEXT DEFAULT 50, levelsEnabled TEXT DEFAULT false, levelsEnabled TEXT DEFAULT false, levelsAnnounceInDM TEXT DEFAULT false, levelupMsg TEXT DEFAULT 'Congrats, you have leveled up!', roleIDs TEXT, selfAssignOn TEXT DEFAULT false)");
+bot.db.serialize(function() {
+	bot.db.run("CREATE TABLE IF NOT EXISTS servers(serverid TEXT, prefix TEXT DEFAULT '??', volume TEXT DEFAULT 50,  levelsEnabled TEXT DEFAULT false, levelsAnnounceInDM TEXT DEFAULT false, levelupMsg TEXT DEFAULT 'Congrats, you have leveled up!', roleIDs TEXT, selfAssignOn TEXT DEFAULT false)");
 	
 	/*
 	db.run("ALTER TABLE servers ADD COLUMN levelsEnabled");
@@ -83,9 +83,9 @@ bot.client.on('ready', () => {
 	bot.aliases = new Discord.Collection();
 	bot.servers = {};
 
-	db.serialize(function() {
-		db.each("SELECT serverid, prefix, volume, levelsEnabled, levelsAnnounceInDM, levelUpMsg, roleIDs, selfAssignOn FROM servers", function(err, row) {
-			var server = bot.servers[row.serverid];
+	bot.db.serialize(function() {
+		bot.db.each("SELECT serverid, prefix, volume, levelsEnabled, levelsAnnounceInDM, levelUpMsg, roleIDs, selfAssignOn FROM servers", function(err, row) {
+			var server = {};
 
 			server = {
 				prefix: row.prefix,
@@ -122,14 +122,16 @@ bot.client.on('ready', () => {
 				server.selfAssignOn = 'false';
 			}
 
+			bot.servers[row.serverid] = server;
+
 		}, function(err, rows) {
-			fs.readdir("./events/", (err, files) => {
+			fs.readdir(bot.checkLocation, (err, files) => {
 				if (err) return console.error(err);
 				console.log("Loading " + files.length + " commands!");
 				files.forEach(file => {
-					var name = require(`./${checkLocation}/${file}`).name.toLowerCase();
-					bot.commands.set(name, require(`./${checkLocation}/${file}`));
-					require(`./${checkLocation}/${file}`).aliases.forEach(alias => {
+					var name = require(`./${bot.checkLocation}/${file}`).name.toLowerCase();
+					bot.commands.set(name, require(`./${bot.checkLocation}/${file}`));
+					require(`./${bot.checkLocation}/${file}`).aliases.forEach(alias => {
 						bot.aliases.set(alias, name);
 					});
 				});
@@ -143,34 +145,26 @@ bot.client.on('ready', () => {
 
 bot.client.on('guildCreate', guild => {
 	var server = bot.servers[guild.id];
-	db.get("SELECT serverid FROM servers WHERE serverid = " + guild.id, function(err, row){
+	bot.db.get("SELECT serverid FROM servers WHERE serverid = " + guild.id, function(err, row){
 		if(row != undefined){
 			return;
 		} else {
-			db.run("INSERT INTO servers (serverid, volume) VALUES(" + guild.id +", 50)");
-	
-			if(bot.isBeta){
-				server = {
-					prefix: '??b'
-				};
-			}
+			bot.db.run("INSERT INTO servers (serverid, volume) VALUES(" + guild.id +", 50)");
 
-			server = {
-				prefix: '??'
-			}
+			server.prefix = '??';
 			
 			server.defaultMusic = "No music channel selected";
-			db.run("UPDATE servers SET defaultMusicID=null WHERE serverid = " + guild.id);
+			bot.db.run("UPDATE servers SET defaultMusicID=null WHERE serverid = " + guild.id);
 		}
 	});
 });
 
 bot.client.on('guildDelete', guild => {
-	db.run("DELETE FROM servers WHERE serverid=" + guild.id);
+	bot.db.run("DELETE FROM servers WHERE serverid=" + guild.id);
 });
 
 bot.client.on('message', message => {
-	if(!isTakingCommands && message.content.indexOf(servers[message.guild.id].prefix) >= 0){
+	if(!isTakingCommands && (message.content.indexOf(servers[message.guild.id].prefix) >= 0 || message.content.contains(message.guild.me.toString()))){
 		message.channel.send("Please wait one minute for Dragonite to start up, thanks!");
 		return;
 	}
@@ -194,8 +188,8 @@ bot.client.on('message', message => {
 		server = bot.servers[message.guild.id];
 
 		//Edge case so that users can mention dragonite to get the prefix
-		if(message.content.toLowerCase().indexOf('<@363478897729339392>') !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1){
-			message.channel.send('Use "@Dragonite help" to see prefix and get help for commands');
+		if(message.content.toLowerCase().indexOf(message.guild.me.toString()) !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1){
+			message.channel.send('Use `@' + message.guild.me.displayName + ' help` to see prefix and get help for commands');
 			return;
 		}
 
@@ -207,13 +201,16 @@ bot.client.on('message', message => {
 		let args = message.content.split(" ");
 		
 		//Stop running if Dragonite isn't mentioned or the prefix isn't used
-		if(args[0].substring(0, prefix.length) != prefix || args[0] != message.guild.me.toString()){
+		if(args[0].substring(0, server.prefix.length) != server.prefix && args[0] != message.guild.me.toString()){
 			return;
 		}
 		
 		try {
+			if(args[0] == message.guild.me.toString()){
+				args.shift();
+			}
 			//Get the command name itself
-			var commandArg = (args[0] == message.guild.me.toString()) ? args[1].toLowerCase() : args[0].replace(prefix, "").toLowerCase();
+			var commandArg = args[0].replace(server.prefix, "").toLowerCase();
 			
 			//Check for aliases, and set commandArg to the full name if there are aliases
 			if(bot.aliases.has(commandArg)) commandArg = bot.aliases.get(commandArg);
@@ -221,13 +218,13 @@ bot.client.on('message', message => {
 			var command = bot.commands.get(commandArg);
 
 			//Check permissions to make sure the user can run the command
-			if(command.permLevel && command.permLevel != Levels.level_0){
-				if(command.permLevel == Levels.level_3 && message.member.id != '139548522377641984'){
+			if(command.permLevel && command.permLevel != levels.level_0){
+				if(command.permLevel == levels.level_3 && message.member.id != '139548522377641984'){
 					message.channel.send("This can only be run by the bot owner, 1Revenger1");
 					return;
 				}
 
-				if(!message.guild.user.hasPermission(command.permLevel)){
+				if(!message.member.hasPermission(command.permLevel) && command.permLevel != levels.level_3){
 					message.channel.send("This can only be run by someone with the `" + command.permLevel + "` permission");
 					return;
 				}
@@ -236,6 +233,7 @@ bot.client.on('message', message => {
 			//Run the command
 			command.run(bot, message, args);
 		} catch (err){
+			console.log(err);
 			return;
 		}
 	}
@@ -250,7 +248,23 @@ bot.client.on('error', error => {
 	});
 });
 
-module.exports = { servers : servers,
+bot.getRole = async function(type, v, g) {
+	if (type == "id") {
+	  return g.roles.get(v);
+	} else if (type == "name") {
+	  return g.roles.find(r => r.name.toLowerCase() === v.toLowerCase());
+	}
+}
+
+bot.checkRoleExists = async function(type, v, g){
+	if(type == "id"){
+		return g.roles.exists('id', v);
+	} else if (type == "name"){
+		return g.roles.exists('name', v);
+	}
+}
+
+module.exports = { bot : bot,
 				   levels : levels };
 module.exports.tokens = function(){
 	return Tokens;
