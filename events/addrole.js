@@ -3,7 +3,7 @@ module.exports = {
     name: "addrole",
     aliases: [],
     helpDesc: "Add roles to Dragonite's list of roles that it is able to give people",
-    helpTitle: "addRole <name of role>",
+    helpTitle: "AddRole <name of role>",
     cat: "admin",
     permLevel: require(`../Dragonite.js`).levels.level_1,
     run: async (bot, message, args) => {

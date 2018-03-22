@@ -10,17 +10,27 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
 		
+		var helpString = "***__Dragonite Commands__***\nUse " + server.prefix + " or @Dragonite to call commands\n\n"		
 
-		var helpEmbed = new Discord.MessageEmbed()
-			.setColor('#E81F2F')
-			.setTitle('Dragonite Help: Use ' + server.prefix + ' or @Dragonite to call commands')
-			.addField('General', '\u200B')
-		
+		var generalString = "**__General__**\n";
+		var adminString = "**__Administration__**\n";
+		var musicString = "**__Music__**\n";
+
 		bot.commands.forEach(async (value, key, map) => {
-			if(!value.cat || value.cat == "general"){
-				helpEmbed.addField(value.helpTitle, value.helpDesc);
+			if(value.ignore){
+				//Don't do anything	
+			} else if(!value.cat || value.cat == "general"){
+				generalString += "*" + value.helpTitle + "*: " + value.helpDesc + "\n";
+			} else if(value.cat == "admin"){
+				adminString += "*" + value.helpTitle + "*: " + value.helpDesc + "\n";
+			} else if(value.cat == "music"){
+				musicString += "*" + value.helpTitle + "*: " + value.helpDesc + "\n";
 			}
 		});
+
+		helpString += generalString + "\n" + musicString + "\n" + adminString;
+
+		message.channel.send(helpString);
 		//DM instead
 
 

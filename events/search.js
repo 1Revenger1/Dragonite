@@ -14,22 +14,24 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
 		const ytkey = require(dragonite).tokens().ytKey();
-	
+		
+		let searchTerm = '';
+		let isDisplay = (args[1].toLowerCase() == 'display');
+		let startValue = 1;
+
 		if(!server.queue) {
 			server.queue = [];
 		}
 	
-		if(!server.Vconnection && args[1].toLowerCase() != 'display'){ //checks if bot is in a voice channel
+		if(!server.Vconnection && !isDisplay){ //checks if bot is in a voice channel
 			try{
-				await require(`./join.js`).run(client, message, args, isBeta, db);
+				await require(`./join.js`).run(bot, message, args);
 			} catch(err) {
 				return;
 			}
 		}
 		
-		let searchTerm = '';
-		let isDisplay = (args[1].toLowerCase() == 'display');
-		let startValue = 1;
+
 		
 		if(isDisplay){
 			startValue++;
@@ -54,26 +56,47 @@ module.exports = {
 				return;
 			}			
 			
-			var infoArray = [];
-			var whichResultString = results.pageInfo.resultsPerPage + " results. Please type " + server.prefix + "<number of result> to select which one you want to use\n\n";
-			for(var i = 0; i < results.pageInfo.resultsPerPage; i++){
-				let info = await ytdl.getInfo("www.youtube.com/watch?v=" + results.items[i].id.videoId);
-				infoArray[i] = info;
-
-				whichResultsString += (i + 1) + ") " + info.title + " by " + info.author.name + "\n";
+			if(server.infoArray != null){
+				message.channel.send("Search already running - Please wait");
+				return;
 			}
 
-			const collector = message.channel.createMessageCollector(m => m.member.id == message.member.id, { time: 60000 });
+			server.infoArray = [];
+			var whichResultString = results.pageInfo.resultsPerPage + " results. Please type " + server.prefix + "<number of result> to select which one you want to use\n\n";
+			for(var i = 0; i < results.pageInfo.resultsPerPage; i++){
+				try{
+					let info = await ytdl.getInfo("www.youtube.com/watch?v=" + results.items[i].id.videoId);;
+					server.infoArray[i] = info;
 
-			collector.on('collect', m => {
-				if(m.content.substring(0, server.prefix.length) == server.prefix || m.content.substring(0, m.guild.me.toString() == m.guild.me.toString())){
-					m.replace(server.prefix, "");
-					m.replace(m.guild.me.toString(), "");
+					whichResultString += (i + 1) + ") " + info.title + " by " + info.author.name + "\n";
+				} catch(err){
+					console.log(err);
+					server.infoArray[0] = null;
+					whichResultString += (i + 1) + ") Error - Do not select";
+				}
+			}
+
+			message.channel.send(whichResultString);
+
+			server.collector = message.channel.createMessageCollector(m => m.member.id == message.member.id, { time: 60000 });
+
+			server.collector.on('collect', async m => {
+				const server = require(`../Dragonite.js`).bot.servers[message.guild.id];
+				if(m.content.substring(0, server.prefix.length) == server.prefix || 
+				   m.content.substring(0, m.guild.me.toString() == m.guild.me.toString())){
+
+					var mText = m.content.replace(server.prefix, "");
+					mText = mText.replace(m.guild.me.toString(), "");
 
 					try{
-						var number = Number.parseInt(m);
-						if(infoArray[number]){
+						var number = Number.parseInt(mText) - 1;
+						if(server.infoArray[number] && server.infoArray[number] != null){
+
+							var info = server.infoArray[number];
+							server.collector.stop('Selected');
+
 							if(isDisplay){
+						
 								try {
 									const newt = info.thumbnail_url.replace("default", "maxresdefault");
 									await request(newt, async(error, response, body) => {
@@ -94,24 +117,24 @@ module.exports = {
 										time: info.length_seconds * 1000
 									});
 								message.channel.send('Added ' + info.title + ' by ' + info.author.user + ' to the queue!');
-								require(`./musicPlay.js`).run(client, message, args, isBeta, db, true);
+								require(`./musicPlay.js`).run(bot, message, args, true);
 							}	
 							
-							collector.stop('Selected');
 						} else {
 							throw new Error('Not a valid result');
 						}
 					} catch(err){
-						message.channel.send(err);
+						message.channel.send(err.message);
 					}
 				}
 			});
 
-			collector.on('end', (collected, reason)){
+			server.collector.on('end', (collected, reason) => {
+				bot.servers[message.guild.id].infoArray = null;
 				if(reason != 'Selected'){
-					message.channel.send("Search selection timed out.");
+					message.channel.send("Search selection timed out");
 				}
-			}
+			});
 
 		});
     			

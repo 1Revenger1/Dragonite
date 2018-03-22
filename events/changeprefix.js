@@ -16,7 +16,7 @@ module.exports = {
         }
     
         server.prefix = args[1];
-        db.run('UPDATE servers SET prefix=\'' + args[1] + '\' WHERE serverid = ' + message.guild.id);
+        bot.db.run('UPDATE servers SET prefix=\'' + args[1] + '\' WHERE serverid = ' + message.guild.id);
         message.channel.send('Bot prefix for the server changed to ' + server.prefix);
     }
 }

@@ -4,6 +4,7 @@ bot.client = new Discord.Client();
 //const readline = require('readline');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+bot.moment = require('moment-timezone');
 bot.db = new sqlite3.Database('database.txt');
 
 const loginLocation = `../../../login.js`;
@@ -79,6 +80,7 @@ bot.db.serialize(function() {
 
 
 bot.client.on('ready', () => {
+	bot.moment().tz("America/Los_Angeles").format();
 	bot.commands = new Discord.Collection();
 	bot.aliases = new Discord.Collection();
 	bot.servers = {};
@@ -94,7 +96,8 @@ bot.client.on('ready', () => {
 				levelsAnnounceInDM: row.levelsAnnounceInLevels,
 				levelUpMsg: row.levelUpMsg,
 				selfAssignOn: row.selfAssignOn,
-				defaultMusic: null
+				defaultMusic: null,
+				infoArray: null
 			}
 
 			if(bot.isBeta){
@@ -233,7 +236,6 @@ bot.client.on('message', message => {
 			//Run the command
 			command.run(bot, message, args);
 		} catch (err){
-			console.log(err);
 			return;
 		}
 	}
