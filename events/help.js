@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 module.exports = {
 	name: "help",
     helpDesc: "Returns Dragonite's commands",
-    helpTitle: "Help",
+	helpTitle: "Help",
     aliases: [],
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
@@ -16,8 +16,10 @@ module.exports = {
 			.setTitle('Dragonite Help: Use ' + server.prefix + ' or @Dragonite to call commands')
 			.addField('General', '\u200B')
 		
-		bot.commands.forEach(async (key, value, map) => {
-			
+		bot.commands.forEach(async (value, key, map) => {
+			if(!value.cat || value.cat == "general"){
+				helpEmbed.addField(value.helpTitle, value.helpDesc);
+			}
 		});
 		//DM instead
 
