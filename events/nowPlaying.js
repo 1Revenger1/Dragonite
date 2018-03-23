@@ -6,7 +6,8 @@ module.exports = {
     name: "nowplaying",
     aliases: ["np"],    
     helpDesc: "Shows the song currently playing, if one is playing",
-    helpTitle: "NowPlaying, NP",
+	helpTitle: "NowPlaying, NP",
+	cat: "music",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
     

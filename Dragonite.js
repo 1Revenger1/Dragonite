@@ -244,7 +244,7 @@ bot.client.on('message', message => {
 bot.client.on('error', error => {
 	var stream = fs.createWriteStream('ConnectionError.log');
 	stream.once('open', fd => {
-		stream.write(moment().format() + ":" + error.name + " -> " + error.message);
+		stream.write(bot.moment().format() + ":" + error.name + " -> " + error.message);
 		stream.end();
 		process.exit();
 	});

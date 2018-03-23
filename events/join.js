@@ -2,7 +2,8 @@ module.exports = {
     name: "join",
     aliases: [],    
     helpDesc: "Called automatically with Play and Search. Has the bot join the user's voice channel",
-    helpTitle: "Join",
+	helpTitle: "Join",
+	cat: "music",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
     
@@ -26,19 +27,4 @@ module.exports = {
 			throw new Error('You need to join a voice channel first!');
 		}
 	}
-}
-
-exports.run = async(client, message, args, isBeta, db) => {
-    var dragonite = null;
-    if(isBeta){
-        dragonite = `../DragoniteBeta.js`;
-    } else {
-        dragonite = `../Dragonite.js`;
-    }
-
-    const server = require(dragonite).servers[message.guild.id];
-    
-
-	
-    
 }

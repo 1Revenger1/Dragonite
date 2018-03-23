@@ -25,7 +25,7 @@ module.exports = {
 	
 		if(!server.Vconnection && !isDisplay){ //checks if bot is in a voice channel
 			try{
-				await require(`./join.js`).run(bot, message, args);
+				await bot.commands.get("join").run(bot, message, args);
 			} catch(err) {
 				return;
 			}
@@ -101,23 +101,23 @@ module.exports = {
 									const newt = info.thumbnail_url.replace("default", "maxresdefault");
 									await request(newt, async(error, response, body) => {
 										info.thumbnail = error ? info.thumbnail_url.replace("default", "hqdefault") : newt;
-										createEmbed(info, results.items[0].id.videoID, message);
+										createEmbed(info, results.items[number].id.videoID, message);
 									});
 								} catch(e) {
 									info.thumbnail = info.thumbnail_url.replace("default", "hqdefault");
-									createEmbed(info, results.items[0].id.videoID, message);
+									createEmbed(info, results.items[number].id.videoID, message);
 								}
 								
 							} else {
 								server.queue.push(song = {
-									url: "https://www.youtube.com/watch?v=" + results.items[0].id.videoId,
+									url: "https://www.youtube.com/watch?v=" + results.items[number].id.videoId,
 										title: info.title,
 										author: info.author.name,
 										channel: message.channel,
 										time: info.length_seconds * 1000
 									});
 								message.channel.send('Added ' + info.title + ' by ' + info.author.user + ' to the queue!');
-								require(`./musicPlay.js`).run(bot, message, args, true);
+								bot.commands.get("musicplay").run(bot, message, args, true);
 							}	
 							
 						} else {

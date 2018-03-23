@@ -48,11 +48,15 @@ module.exports = {
             
             server.queue.shift();
             if(server.queue[0]){
-                require('./musicPlay.js').run(client, message, args, isBeta, db, true);
+                bot.commands.get("musicplay").run(bot, message, args, true);
             } else {
                 message.channel.send('Playlist finished. Use ' + server.prefix + 'leave to have the bot leave the voice channel.');
                 return;
             }
+        });
+
+        server.dispatcher.on("error", (err) =>{
+            console.log(err);
         });
     }
 }
