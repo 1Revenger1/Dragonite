@@ -86,7 +86,7 @@ bot.client.on('ready', () => {
 	bot.servers = {};
 
 	bot.db.serialize(function() {
-		bot.db.each("SELECT serverid, prefix, volume, levelsEnabled, levelsAnnounceInDM, levelUpMsg, roleIDs, selfAssignOn FROM servers", function(err, row) {
+		bot.db.each("SELECT serverid, prefix, volume, levelsEnabled, levelsAnnounceInDM, levelUpMsg, roleIDs, selfAssignOn, defaultMusicID FROM servers", function(err, row) {
 			var server = {};
 
 			server = {
@@ -103,15 +103,11 @@ bot.client.on('ready', () => {
 			if(bot.isBeta){
 				server.prefix = '??b';
 			}
-
-			if(row.defaultMusicID && bot.client.guilds.exists('id', row.serverid)){
-				try{
-					server.defaultMusic = bot.client.guilds.get(row.serverid).channels.find('id', row.defaultMusicID);
-				} catch(err){
-					server.defaultMusic = 'No music channel selected';
-				}
+			
+			if(row.defaultMusicID && bot.client.guilds.has(row.serverid) && bot.client.guilds.get(row.serverid).channels.has(row.defaultMusicID)){
+				server.defaultMusic = bot.client.guilds.get(row.serverid).channels.get(row.defaultMusicID);
 			} else {
-				server.defaultMusic = 'No music channel selected';
+				server.defaultMusic = null;
 			}
 
 			if(row.roleIDs && bot.client.guilds.exists('id', row.serverid)){
