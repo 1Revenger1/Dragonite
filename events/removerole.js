@@ -32,7 +32,7 @@ module.exports = {
                 for(var i = 0; i < server.roles.length; i++){
                     dbInsert += server.roles[i].id + " ";
                 }
-                db.run("UPDATE servers SET roleIDs =\'" + dbInsert + "\' WHERE serverid = " + message.guild.id);
+                bot.db.run("UPDATE servers SET roleIDs =\'" + dbInsert + "\' WHERE serverid = " + message.guild.id);
                 return;
             }
         }

@@ -103,22 +103,23 @@ bot.client.on('ready', () => {
 			if(bot.isBeta){
 				server.prefix = '??b';
 			}
-			
+
 			if(row.defaultMusicID && bot.client.guilds.has(row.serverid) && bot.client.guilds.get(row.serverid).channels.has(row.defaultMusicID)){
 				server.defaultMusic = bot.client.guilds.get(row.serverid).channels.get(row.defaultMusicID);
 			} else {
 				server.defaultMusic = null;
 			}
 
+			var invalidRoles = "";
+
 			if(row.roleIDs && bot.client.guilds.exists('id', row.serverid)){
 				server.roles = [];
 				let roleIDs = row.roleIDs.split(" ");
 				for(var i = 0; i < roleIDs.length - 1; i++){
-					server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
+					try{
+						server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
+					}
 				}
-			} else {
-				server.roles = [];
-				server.selfAssignOn = 'false';
 			}
 
 			bot.servers[row.serverid] = server;

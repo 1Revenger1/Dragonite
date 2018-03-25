@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 module.exports = {
     name: "forceskip",
     aliases: [],    
-    helpDesc: "Skips the current song without going trough the vote",
+    helpDesc: "Skips the current song without going through the vote",
     helpTitle: "ForceSkip",
     cat: "admin",
     permLevel: require(`../Dragonite.js`).levels.level_2,

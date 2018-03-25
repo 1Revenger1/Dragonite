@@ -11,7 +11,7 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
         
-        if(server.selfAssignOn == 'true'){
+        if(server.selfAssignOn != 'true'){
             message.channel.send("Self Assignable Roles are not enabled on this server! Please turn it on using " + server.prefix + "options");
             return;
         }
