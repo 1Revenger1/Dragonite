@@ -118,6 +118,8 @@ bot.client.on('ready', () => {
 				for(var i = 0; i < roleIDs.length - 1; i++){
 					try{
 						server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
+					} catch(err){
+						//Do nothing if role does not exist
 					}
 				}
 			}

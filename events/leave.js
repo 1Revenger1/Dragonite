@@ -1,6 +1,6 @@
 module.exports = {
     name: "leave",
-    aliases: [],    
+    aliases: ["stop"],    
     helpDesc: "Have the bot leave the voice channel and empty the queue",
     helpTitle: "Leave",
     ignore: true,
@@ -13,6 +13,8 @@ module.exports = {
             message.guild.me.voiceChannel.leave();
             server.Vconnection = null;
             server.queue = null;
+            server.isPlaying = false;
+            message.channel.send("Left the voice channel and emptied queue");
         } else {
             message.channel.send('I\'m not in a voice channel...');
         }
