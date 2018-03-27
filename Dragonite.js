@@ -19,7 +19,7 @@ const levels = {
 }
 
 bot.version = '0-v7.0.0';
-bot.versionBeta = '.1';
+bot.versionBeta = '.3';
 bot.checkLocation;
 bot.isBeta = false;
 
