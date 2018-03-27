@@ -28,17 +28,17 @@ switch(myArgs[0]){
 	case '-r': bot.client.login(Tokens.releaseToken());
 		bot.isBeta = false;
 		bot.version = bot.version + ' Release';
-		bot.checkLocation = 'events';
+		bot.checkLocation = 'modules';
 		break;
 	case '-b': bot.client.login(Tokens.betaToken());
 		bot.version = bot.version + bot.versionBeta + ' Beta';
 		bot.isBeta = true;
-		bot.checkLocation = 'eventsBeta';
+		bot.checkLocation = 'modulesBeta';
 		break;
 	case '-c': bot.client.login(Tokens.betaToken());
 		bot.version = bot.version + ' Release Canidate';
 		bot.isBeta = true;
-		bot.checkLocation = 'eventsBeta';
+		bot.checkLocation = 'modulesBeta';
 		break;
 }
 
