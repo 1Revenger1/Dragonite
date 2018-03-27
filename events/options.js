@@ -19,15 +19,26 @@ module.exports = {
             var optionString = "***__Dragonite Options__***\n\n";		
             var roleString = "**__Role__**\n";
             var musicString = "**__Music__**\n";
+            var loggingString = "**__Logging__**\n";
             var endString = "You can change options in italics. For more details, do `" + server.prefix + "options <name of header>`";
 
-            roleString += "*Enabled:* " + (rolesOn == "true" ? ":white_check_mark:" : ":x:") + "\n" +
+            roleString += "Enabled: " + trueCheck(rolesOn) +
                           "Has \"Manage Role\": " + (message.guild.me.hasPermission("MANAGE_ROLES") == true ? ":white_check_mark:" : ":x:") + "\n";
     
-            musicString += "Music Channel set: " + (musicChannel != null ? ":white_check_mark:" : ":x:") + "\n" + 
-                           "*Music Channel:* " + (musicChannel != null ? musicChannel.name : "Not set") + "\n";
+            musicString += "Music Channel set: " + (musicChannel != undefined ? ":white_check_mark:" : ":x:") + "\n" + 
+                           "Music Channel: " + (musicChannel != undefined ? musicChannel.name : "Not set") + "\n";
+
+            loggingString += "Logging Dump Channel: " + (server.logChannel != undefined ? server.logChannel.name : "Not set") + "\n" + 
+                            "Join Logs Dump Channel: " + (server.userLogChannel != undefined ? server.userLogChannel.name : "Not set") + "\n" + 
+                            "Enabled: " + trueCheck(server.loggingEnabled) +
+                            "Channel Logs: " + trueCheck(server.loggingChannel) + 
+                            "Emoji Logs: " + trueCheck(server.loggingEmoji) + 
+                            "Join Logs: " + trueCheck(server.loggingJoin) + 
+                            "User Logs: " + trueCheck(server.loggingUser) + 
+                            "Message Logs: " + trueCheck(server.loggingMessage) + 
+                            "Role Logs: " + trueCheck(server.loggingRole) + "\n";
     
-            optionString += roleString + "\n" + musicString + "\n" + endString;
+            optionString += roleString + "\n" + musicString + "\n" + loggingString + "\n" + endString;
     
 
     
@@ -67,10 +78,94 @@ module.exports = {
                 }
                 break;
             case "logging":
-                message.channel.send("Not implemented yet");
+                if(args[2]){
+                    args[3] = args[3] ? args[3].toLowerCase(): null;
+                    var optionChanged = false;
+                    switch(args[2].toLowerCase()){
+                        case "true":
+                        case "false":
+                            optionChanged = true;
+                            server.loggingEnabled = args[2];
+                            message.channel.send("Logging Enabled set to `" + args[2].toLowerCase() + "`");
+                            break;
+                        case "channel":
+                            optionChanged = setTrueCheck(args[3], server.loggingChannel, "Channel Logging", message);
+                            break;
+                        case "emoji":
+                            optionChanged = setTrueCheck(args[3], server.loggingEmoji, "Emoji Logging", message);
+                            break;
+                        case "join":
+                            optionChanged = setTrueCheck(args[3], server.loggingJoin, "Join Logging", message);
+                            break;
+                        case "user":
+                            optionChanged = setTrueCheck(args[3], server.loggingUser, "User Logging", message);
+                            break;
+                        case "message":
+                            optionChanged = setTrueCheck(args[3], server.loggingMessage, "Message Logging", message);
+                            break;
+                        case "role":
+                            optionChanged = setTrueCheck(args[3], server.loggingRole, "Role Logging", message);
+                            break;
+                        case "setLoggingChannel":
+                            if(message.guild.channels.exists('name', args[3])){
+                                server.logChannel = message.guild.channels.find('name', args[3]);
+                                bot.db.run("UPDATE servers SET loggingChannelID=\'" + server.logChannel.id + "\' WHERE serverid = " + message.guild.id);
+                                message.channel.send("Logging channel set to " + args[3]);
+                                return;
+                            } else {
+                                message.channel.send('That is not a valid text channel');
+                            }
+                            break;
+                        case "setJoinLoggingChannel":
+                            if(message.guild.channels.exists('name', args[3])){
+                                server.userLogChannel = message.guild.channels.find('name', args[3]);
+                                bot.db.run("UPDATE servers SET userJoinLogChannelID=\'" + server.userLogChannel.id + "\' WHERE serverid = " + message.guild.id);
+                                message.channel.send("Join Logging channel set to " + args[3]);
+                                return;
+                            } else {
+                                message.channel.send('That is not a valid text channel');
+                            }
+                            break;
+                        default:
+                            message.channel.send("Incorrect paramter - Use " + server.prefix + "options logging for more details");
+                            break;
+                    }
+
+                    if(optionChanged){
+                        bot.db.run("UPDATE servers SET loggingEnabled='" + server.loggingEnabled 
+                                                                     + " " + server.loggingChannel
+                                                                     + " " + server.loggingEmoji
+                                                                     + " " + server.loggingJoin
+                                                                     + " " + server.loggingUser 
+                                                                     + " " + server.loggingMessage 
+                                                                     + " " + server.loggingRole 
+                                                                     + "' WHERE serverid = " + message.guild.id);
+                    }
+
+                } else {
+                    message.channel.send("Logging Control Panel. Use `" + server.prefix + "options logging \"true\"/\"false\"` to enable logging.\n\n" + 
+                                        "**Other Options:**\n`" + server.prefix + "options setLoggingChannel/setJoinLoggingChannel <Name of text channel>`\nSets the logging channel. Join Logging is for when users join/leave\n\n" +
+                                        "`" + server.prefix + "options \"channel\"/\"Join\"/etc... \"true\"/\"false\"`\nEnables or Disables different modules of the logger.");
+                    message.channel.send("Not implemented yet");
+                }
                 break;
             default:
                 message.channel.send("That is not an option you can set.");
         }
     }
+}
+
+function setTrueCheck(string, object, name, message){
+    if(string == "true" || string == "false"){
+        server.loggingChannel = string;
+        message.channel.send(name + " set to `" + string + "`");
+        return true;
+    } else {
+        return false;
+        message.channel.send("Incorrect parameter. Use \"True\" or \"False\"");
+    }
+}
+
+function trueCheck(check){
+    return check == "true" ? ":white_check_mark: \n" : ":x: \n";
 }

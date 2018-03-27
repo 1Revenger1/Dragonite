@@ -74,7 +74,13 @@ bot.db.serialize(function() {
 	db.run("ALTER TABLE servers ADD COLUMN roleIDs");
 	db.run("ALTER TABLE servers ADD COLUMN selfAssignOn");
 	db.run("ALTER TABLE servers ADD COLUMN defaultMusicID");
+	bot.db.run("ALTER TABLE servers ADD COLUMN loggingChannelID INTEGER DEFAULT 0");
+	bot.db.run("ALTER TABLE servers ADD COLUMN userJoinLogChannelID INTEGER DEFAULT 0");
+	
+	//Logging enabled, Channel, Emojis, Join, User, Message, Role
+	bot.db.run("ALTER TABLE servers ADD COLUMN loggingEnabled TEXT DEFAULT 'false false false false false false false'");
 	*/
+
 
 });
 
@@ -86,40 +92,56 @@ bot.client.on('ready', () => {
 	bot.servers = {};
 
 	bot.db.serialize(function() {
-		bot.db.each("SELECT serverid, prefix, volume, levelsEnabled, levelsAnnounceInDM, levelUpMsg, roleIDs, selfAssignOn, defaultMusicID FROM servers", function(err, row) {
+		bot.db.each("SELECT * FROM servers", function(err, row) {
 			var server = {};
 
-			server = {
-				prefix: row.prefix,
-				volume: row.volume/100,
-				levelsEnabled: row.levelsEnabled,
-				levelsAnnounceInDM: row.levelsAnnounceInLevels,
-				levelUpMsg: row.levelUpMsg,
-				selfAssignOn: row.selfAssignOn,
-				defaultMusic: null,
-				infoArray: null
-			}
+			if(bot.client.guilds.has(row.serverid)){
+				var guild = bot.client.guilds.get(row.serverid);
+				server = {
+					prefix: bot.isBeta ? "??b" : row.prefix,
+					volume: row.volume/100,
+					levelsEnabled: row.levelsEnabled,
+					levelsAnnounceInDM: row.levelsAnnounceInLevels,
+					levelUpMsg: row.levelUpMsg,
+					selfAssignOn: row.selfAssignOn,
+				}
+	
+				let loggingCommands = row.loggingEnabled.split(" ");
+				server.loggingEnabled = loggingCommands[0];
+				server.loggingChannel = loggingCommands[1];
+				server.loggingEmoji = loggingCommands[2];
+				server.loggingJoin = loggingCommands[3];
+				server.loggingUser = loggingCommands[4];
+				server.loggingMessage = loggingCommands[5];
+				server.loggingRole = loggingCommands[6];
 
-			if(bot.isBeta){
-				server.prefix = '??b';
-			}
+				if(row.loggingChannelID){
+					server.logChannel = guild.channels.get(row.loggingChannelID);
+				} else {
+					server.defaultMusic = undefined;
+				}
 
-			if(row.defaultMusicID && bot.client.guilds.has(row.serverid) && bot.client.guilds.get(row.serverid).channels.has(row.defaultMusicID)){
-				server.defaultMusic = bot.client.guilds.get(row.serverid).channels.get(row.defaultMusicID);
-			} else {
-				server.defaultMusic = null;
-			}
+				if(row.userJoinLogChannelID){
+					server.userLogChannel = guild.channels.get(row.userJoinLogChannelID)
+				} else {
+					server.userLogChannel = undefined;
+				}
 
-			var invalidRoles = "";
+				if(row.defaultMusicID){
+					server.defaultMusic = bot.client.guilds.get(row.serverid).channels.get(row.defaultMusicID);
+				} else {
+					server.defaultMusic = undefined;
+				}
 
-			if(row.roleIDs && bot.client.guilds.exists('id', row.serverid)){
-				server.roles = [];
-				let roleIDs = row.roleIDs.split(" ");
-				for(var i = 0; i < roleIDs.length - 1; i++){
-					try{
-						server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
-					} catch(err){
-						//Do nothing if role does not exist
+				if(row.roleIDs){
+					server.roles = [];
+					let roleIDs = row.roleIDs.split(" ");
+					for(var i = 0; i < roleIDs.length - 1; i++){
+						try{
+							server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
+						} catch(err){
+							//Do nothing if role does not exist
+						}
 					}
 				}
 			}
