@@ -25,8 +25,8 @@ exports.run = (bot) => {
 				.setTimestamp(new Date());
 
 			try{
-				if(server.logChannel != undefined){
-					server.logChannel.send({embed: joinEmbed});
+				if(server.userLogChannel != undefined){
+					server.userLogChannel.send({embed: joinEmbed});
 				} else {
 					server.logChannel.send({embed: joinEmbed});
 				}
@@ -52,8 +52,8 @@ exports.run = (bot) => {
 				.setTimestamp(new Date());
 
 			try{
-				if(server.logChannel != undefined){
-					server.logChannel.send({embed: joinEmbed});
+				if(server.userLogChannel != undefined){
+					server.userLogChannel.send({embed: joinEmbed});
 				} else {
 					server.logChannel.send({embed: joinEmbed});
 				}
