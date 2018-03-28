@@ -21,7 +21,7 @@ exports.run = (bot) => {
 				.setColor("#4760ff")
 				.setTitle("User joined!")
 				.setThumbnail(member.user.displayAvatarURL())
-				.setDescription(`${member} has joined!`)
+				.setDescription(`${member} has joined!\n${member.guild.memberCount} users in this guild.`)
 				.setTimestamp(new Date());
 
 			try{
@@ -48,7 +48,7 @@ exports.run = (bot) => {
 				.setColor("#4760ff")
 				.setTitle("User joined!")
 				.setThumbnail(member.user.displayAvatarURL())
-				.setDescription(`${member} has left!`)
+				.setDescription(`${member} has left!\n${member.guild.memberCount} users in this guild.`)
 				.setTimestamp(new Date());
 
 			try{
