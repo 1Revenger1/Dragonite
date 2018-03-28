@@ -96,7 +96,7 @@ bot.client.on('ready', () => {
 			var server = {};
 
 			if(bot.client.guilds.has(row.serverid)){
-				var guild = bot.client.guilds.get(row.serverid);
+				let guild = bot.client.guilds.get(row.serverid);
 				server = {
 					prefix: bot.isBeta ? "??b" : row.prefix,
 					volume: row.volume/100,
@@ -116,13 +116,14 @@ bot.client.on('ready', () => {
 				server.loggingRole = loggingCommands[6];
 
 				if(row.loggingChannelID){
-					server.logChannel = guild.channels.get(row.loggingChannelID);
+					console.log(row.loggingChannelID);
+					server.logChannel = bot.client.guilds.get(row.serverid).channels.get(row.loggingChannelID);
 				} else {
 					server.defaultMusic = undefined;
 				}
 
 				if(row.userJoinLogChannelID){
-					server.userLogChannel = guild.channels.get(row.userJoinLogChannelID)
+					server.userLogChannel = bot.client.guilds.get(row.serverid).channels.get(row.userJoinLogChannelID);
 				} else {
 					server.userLogChannel = undefined;
 				}
@@ -149,6 +150,7 @@ bot.client.on('ready', () => {
 			bot.servers[row.serverid] = server;
 
 		}, function(err, rows) {
+			require(`./loggerPro.js`).run(bot);
 			fs.readdir(bot.checkLocation, (err, files) => {
 				if (err) return console.error(err);
 				console.log("Loading " + files.length + " commands!");
