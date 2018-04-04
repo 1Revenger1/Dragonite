@@ -163,6 +163,27 @@ exports.run = (bot) => {
 			}
 		});
 
+		bot.client.on("guildMemberUpdate", (oldMember, newMember) => {
+			let server = bot.servers[guild.id];
+			if(server.loggingEnabled != "true" || server.loggingUser != "true"){
+				return;
+			} else {
+				if(oldMember.nickname != newMember.nickname){
+					var messageEmbed = new Discord.messageEmbed()
+						.setColor("#f347ff")
+						.setTitle("User nickname changed")
+						.setThumbnail(member.user.displayAvatarURL())
+						.setDescription(`Old nickame: ${oldMember.displayName}\nNew nickname: ${newMember.displayName}`)
+						.setTimestamp(new Date());
+	
+					try{
+						server.logChannel.send({embed: messageEmbed});
+					} catch(err){
+						console.log(err);
+					}
+				}
+			}
+		});
 
 	} catch(err){
 		console.log(err);
