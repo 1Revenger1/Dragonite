@@ -10,16 +10,18 @@ module.exports = {
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
     
-        const server = bot.servers[message.guild.id];					
-
-        var page = 0;
-        var pages = Math.floor((server.queue.length - 1) / 10) + 1;
-        var totalTimeLeft = 0;
+        var server = bot.servers[message.guild.id];		
 
         if(!server.queue){
             message.channel.send("I\'m not playing anything yet");
             return;
         }
+
+        var page = 0;
+        var pages = Math.floor((server.queue.length - 1) / 10) + 1;
+        var totalTimeLeft = 0;
+
+
 
         if(args[1]){
             page = Number.parseInt(args[1]) - 1;

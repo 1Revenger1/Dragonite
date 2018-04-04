@@ -89,24 +89,24 @@ module.exports = {
                             message.channel.send("Logging Enabled set to `" + args[2].toLowerCase() + "`");
                             break;
                         case "channel":
-                            optionChanged = setTrueCheck(args[3], server.loggingChannel, "Channel Logging", message);
+                            optionChanged = setTrueCheck(args[3], server, "Channel Logging", message);
                             break;
                         case "emoji":
-                            optionChanged = setTrueCheck(args[3], server.loggingEmoji, "Emoji Logging", message);
+                            optionChanged = setTrueCheck(args[3], server, "Emoji Logging", message);
                             break;
                         case "join":
-                            optionChanged = setTrueCheck(args[3], server.loggingJoin, "Join Logging", message);
+                            optionChanged = setTrueCheck(args[3], server, "Join Logging", message);
                             break;
                         case "user":
-                            optionChanged = setTrueCheck(args[3], server.loggingUser, "User Logging", message);
+                            optionChanged = setTrueCheck(args[3], server, "User Logging", message);
                             break;
                         case "message":
-                            optionChanged = setTrueCheck(args[3], server.loggingMessage, "Message Logging", message);
+                            optionChanged = setTrueCheck(args[3], server, "Message Logging", message);
                             break;
                         case "role":
-                            optionChanged = setTrueCheck(args[3], server.loggingRole, "Role Logging", message);
+                            optionChanged = setTrueCheck(args[3], server, "Role Logging", message);
                             break;
-                        case "setLoggingChannel":
+                        case "setloggingchannel":
                             if(message.guild.channels.exists('name', args[3])){
                                 server.logChannel = message.guild.channels.find('name', args[3]);
                                 bot.db.run("UPDATE servers SET loggingChannelID=\'" + server.logChannel.id + "\' WHERE serverid = " + message.guild.id);
@@ -116,7 +116,7 @@ module.exports = {
                                 message.channel.send('That is not a valid text channel');
                             }
                             break;
-                        case "setJoinLoggingChannel":
+                        case "setjoinloggingchannel":
                             if(message.guild.channels.exists('name', args[3])){
                                 server.userLogChannel = message.guild.channels.find('name', args[3]);
                                 bot.db.run("UPDATE servers SET userJoinLogChannelID=\'" + server.userLogChannel.id + "\' WHERE serverid = " + message.guild.id);
@@ -127,7 +127,7 @@ module.exports = {
                             }
                             break;
                         default:
-                            message.channel.send("Incorrect paramter - Use " + server.prefix + "options logging for more details");
+                            message.channel.send("Incorrect parameter - Use " + server.prefix + "options logging for more details");
                             break;
                     }
 
@@ -144,8 +144,8 @@ module.exports = {
 
                 } else {
                     message.channel.send("Logging Control Panel. Use `" + server.prefix + "options logging \"true\"/\"false\"` to enable logging.\n\n" + 
-                                        "**Other Options:**\n`" + server.prefix + "options setLoggingChannel/setJoinLoggingChannel <Name of text channel>`\nSets the logging channel. Join Logging is for when users join/leave\n\n" +
-                                        "`" + server.prefix + "options \"channel\"/\"Join\"/etc... \"true\"/\"false\"`\nEnables or Disables different modules of the logger.");
+                                        "**Other Options:**\n`" + server.prefix + "options logging setLoggingChannel/setJoinLoggingChannel <Name of text channel>`\nSets the logging channel. Join Logging is for when users join/leave\n\n" +
+                                        "`" + server.prefix + "options logging \"channel\"/\"Join\"/etc... \"true\"/\"false\"`\nEnables or Disables different modules of the logger.");
                     message.channel.send("Not implemented yet");
                 }
                 break;
@@ -155,14 +155,27 @@ module.exports = {
     }
 }
 
-function setTrueCheck(string, object, name, message){
+function setTrueCheck(string, server, name, message){
     if(string == "true" || string == "false"){
-        server.loggingChannel = string;
+        if(name.includes("Channel")){
+            server.loggingChannel = string;
+        } else if(name.includes("Emoji")){
+            server.loggingEmoji = string;
+        } else if(name.includes("Join")){
+            server.loggingJoin = string;
+        } else if(name.includes("User")){
+            server.loggingUser = string;
+        } else if(name.includes("Message")){
+            server.loggingMessage = string;
+        } else if(name.includes("Role")){
+            server.loggingRole = string;
+        }
+
         message.channel.send(name + " set to `" + string + "`");
         return true;
     } else {
-        return false;
         message.channel.send("Incorrect parameter. Use \"True\" or \"False\"");
+        return false;
     }
 }
 

@@ -109,6 +109,10 @@ module.exports = {
 								}
 								
 							} else {
+								var totalTimeLeft = 0;
+								for(var i = 0; i < server.queue.length; i++){
+									totalTimeLeft += server.queue[i].time;
+								}
 								server.queue.push(song = {
 									url: "https://www.youtube.com/watch?v=" + results.items[number].id.videoId,
 										title: info.title,
@@ -116,7 +120,7 @@ module.exports = {
 										channel: message.channel,
 										time: info.length_seconds * 1000
 									});
-								message.channel.send('Added ' + info.title + ' by ' + info.author.user + ' to the queue!');
+								message.channel.send('Added ' + info.title + ' by ' + info.author.user + ' to the queue! Will be played in `' + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + '`');
 								bot.commands.get("musicplay").run(bot, message, args, true);
 							}	
 							

@@ -92,9 +92,11 @@ bot.client.on('ready', () => {
 	bot.servers = {};
 
 	bot.db.serialize(function() {
+		var count = 0;
+		console.log("Loading data for guilds...");
 		bot.db.each("SELECT * FROM servers", function(err, row) {
 			var server = {};
-
+			count++;
 			if(bot.client.guilds.has(row.serverid)){
 				let guild = bot.client.guilds.get(row.serverid);
 				server = {
@@ -116,7 +118,6 @@ bot.client.on('ready', () => {
 				server.loggingRole = loggingCommands[6];
 
 				if(row.loggingChannelID){
-					console.log(row.loggingChannelID);
 					server.logChannel = bot.client.guilds.get(row.serverid).channels.get(row.loggingChannelID);
 				} else {
 					server.defaultMusic = undefined;
@@ -150,6 +151,7 @@ bot.client.on('ready', () => {
 			bot.servers[row.serverid] = server;
 
 		}, function(err, rows) {
+			console.log("Loading data for " + count + " guilds");
 			require(`./loggerPro.js`).run(bot);
 			fs.readdir(bot.checkLocation, (err, files) => {
 				if (err) return console.error(err);
@@ -164,6 +166,15 @@ bot.client.on('ready', () => {
 				console.log('I am ready!');
 				setInterval(changeGame, 10000);
 				isTakingCommands = true;
+				
+				//Parse restart
+				const json = fs.readFileSync("./Restart.json");
+				let restart = JSON.parse(json);
+				if (restart != "") {
+				  bot.client.channels.get(restart).send(`Dragonite restarted!\nLoaded data for ` + count + ` guilds\nLoaded ` + files.length + ` commands!`);
+				  restart = "";
+				  fs.writeFileSync("./Restart.json", JSON.stringify(restart, null, 3));
+				}
 			});
 		});
 	});
@@ -190,11 +201,6 @@ bot.client.on('guildDelete', guild => {
 });
 
 bot.client.on('message', message => {
-	if(!isTakingCommands && (message.content.indexOf(servers[message.guild.id].prefix) >= 0 || message.content.contains(message.guild.me.toString()))){
-		message.channel.send("Please wait one minute for Dragonite to start up, thanks!");
-		return;
-	}
-
     //Command Start
 	if(message.channel.type == 'dm'){ //Sentience
 		if(message.author.id == '139548522377641984'){
@@ -228,6 +234,11 @@ bot.client.on('message', message => {
 		
 		//Stop running if Dragonite isn't mentioned or the prefix isn't used
 		if(args[0].substring(0, server.prefix.length) != server.prefix && args[0] != message.guild.me.toString()){
+			return;
+		}
+
+		if(!isTakingCommands){
+			message.channel.send("Please wait one minute for Dragonite to start up, thanks!");
 			return;
 		}
 		

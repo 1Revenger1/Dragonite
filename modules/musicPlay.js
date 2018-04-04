@@ -42,6 +42,7 @@ module.exports = {
             server.dispatcher = null;
             
             if(server.queue === null){
+                console.log(server.queue);
                 message.channel.send('Dragonite stopped and queue emptied');
                 return;
             }

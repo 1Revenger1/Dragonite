@@ -2,8 +2,7 @@ module.exports = {
     name: "leave",
     aliases: ["stop"],    
     helpDesc: "Have the bot leave the voice channel and empty the queue",
-    helpTitle: "Leave/Stop",
-    cat: "music",
+    helpTitle: "Leave",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
     
