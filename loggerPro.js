@@ -165,9 +165,11 @@ exports.run = (bot) => {
 
 		bot.client.on("guildMemberUpdate", (oldMember, newMember) => {
 			let server = bot.servers[guild.id];
-			if(server.loggingEnabled != "true" || server.loggingUser != "true"){
+			if(server.loggingEnabled != "true"){
 				return;
-			} else {
+			}
+			
+			if(server.loggingUser == "true"){
 				if(oldMember.nickname != newMember.nickname){
 					var messageEmbed = new Discord.messageEmbed()
 						.setColor("#f347ff")
@@ -180,6 +182,37 @@ exports.run = (bot) => {
 						server.logChannel.send({embed: messageEmbed});
 					} catch(err){
 						console.log(err);
+					}
+				}
+
+				if(!oldMember.roles.equals(newMember)){
+					var rolesChanged = "";
+					if(oldMember.roles.size > newMember.roles.size){
+						oldMember.forEach(function(value, key, map) {
+							if(!newMember.roles.exist(key)) rolesChanged += oldMember.roles.get(key) + ", ";
+						});
+
+						var messageEmbed = new Discord.messageEmbed()
+							.setColor("#f347ff")
+							.setTitle("Removed role from user")
+							.setThumbnail(member.user.displayAvatarURL())
+							.setDescription(`Roles removed: ${rolesChanged}`)
+							.setTimestamp(new Date());
+
+						message.channel.send({embed: messageEmbed});
+					} else if(newMember.roles.size < oldMember.roles.size){
+						newMember.forEach(function(value, key, map) {
+							if(!oldMember.roles.exist(key)) rolesChanged += newMember.roles.get(key) + ", ";
+						});
+
+						var messageEmbed = new Discord.messageEmbed()
+							.setColor("#f347ff")
+							.setTitle("Gave role to user")
+							.setThumbnail(member.user.displayAvatarURL())
+							.setDescription(`Roles given: ${rolesChanged}`)
+							.setTimestamp(new Date());
+
+						message.channel.send({embed: messageEmbed});
 					}
 				}
 			}
