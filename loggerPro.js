@@ -68,7 +68,7 @@ exports.run = (bot) => {
 
 			var messageEmbed = new Discord.MessageEmbed()
 				.setColor("#ff4747")
-				.setTitle("Message deleted")
+				.setTitle("Message deleted by " + message.member.displayName)
 				.setThumbnail(message.member.user.displayAvatarURL())
 				.setDescription(`Message content:\n${message.content}`)
 				.setTimestamp(new Date());
@@ -100,7 +100,11 @@ exports.run = (bot) => {
 		});
 		
 		bot.client.on("messageUpdate", (oldMessage, newMessage) => {
-			let server = bot.servers[oldMessage.guild.id];
+			try{
+				let server = bot.servers[oldMessage.guild.id];
+			} catch (err) {
+				return;
+			}
 			if(server.loggingEnabled != "true" || server.loggingMessage != "true"){
 				return;
 			}
@@ -111,7 +115,7 @@ exports.run = (bot) => {
 
 			var messageEmbed = new Discord.MessageEmbed()
 				.setColor("#ff4747")
-				.setTitle("Messages edited")
+				.setTitle("Messages edited by " + oldMessage.member.displayName)
 				.setThumbnail(oldMessage.member.user.displayAvatarURL())
 				.setDescription(`Old message:\`\`\`\n${oldMessage.content}\`\`\`\nNew message:\`\`\`\n${newMessage.content}\`\`\``)
 				.setTimestamp(new Date());
@@ -173,7 +177,7 @@ exports.run = (bot) => {
 				if(oldMember.nickname != newMember.nickname){
 					var messageEmbed = new Discord.MessageEmbed()
 						.setColor("#f347ff")
-						.setTitle("User nickname changed")
+						.setTitle(newMember.toString() + " nickname's changed")
 						.setThumbnail(oldMember.user.displayAvatarURL())
 						.setDescription(`Old nickame: ${oldMember.displayName}\nNew nickname: ${newMember.displayName}`)
 						.setTimestamp(new Date());
@@ -188,31 +192,31 @@ exports.run = (bot) => {
 				if(!oldMember.roles.equals(newMember)){
 					var rolesChanged = "";
 					if(oldMember.roles.size > newMember.roles.size){
-						oldMember.forEach(function(value, key, map) {
-							if(!newMember.roles.exist(key)) rolesChanged += oldMember.roles.get(key) + ", ";
+						oldMember.roles.forEach(function(value, key, map) {
+							if(!newMember.roles.has(key)) rolesChanged += oldMember.roles.get(key).toString() + "\n";
 						});
 
-						var messageEmbed = new Discord.messageEmbed()
+						var messageEmbed = new Discord.MessageEmbed()
 							.setColor("#f347ff")
-							.setTitle("Removed role from user")
-							.setThumbnail(member.user.displayAvatarURL())
-							.setDescription(`Roles removed: ${rolesChanged}`)
+							.setTitle("Took role from " + newMember.displayName)
+							.setThumbnail(oldMember.user.displayAvatarURL())
+							.setDescription(`Roles removed:\n ${rolesChanged}`)
 							.setTimestamp(new Date());
 
-						message.channel.send({embed: messageEmbed});
-					} else if(newMember.roles.size < oldMember.roles.size){
-						newMember.forEach(function(value, key, map) {
-							if(!oldMember.roles.exist(key)) rolesChanged += newMember.roles.get(key) + ", ";
+						server.logChannel.send({embed: messageEmbed});
+					} else if(newMember.roles.size > oldMember.roles.size){
+						newMember.roles.forEach(function(value, key, map) {
+							if(!oldMember.roles.has(key)) rolesChanged += newMember.roles.get(key).toString() + "\n";
 						});
 
-						var messageEmbed = new Discord.messageEmbed()
+						var messageEmbed = new Discord.MessageEmbed()
 							.setColor("#f347ff")
-							.setTitle("Gave role to user")
-							.setThumbnail(member.user.displayAvatarURL())
+							.setTitle("Gave role to " + newMember.displayName)
+							.setThumbnail(oldMember.user.displayAvatarURL())
 							.setDescription(`Roles given: ${rolesChanged}`)
 							.setTimestamp(new Date());
 
-						message.channel.send({embed: messageEmbed});
+						server.logChannel.send({embed: messageEmbed});
 					}
 				}
 			}

@@ -204,19 +204,44 @@ bot.client.on('message', message => {
     //Command Start
 	if(message.channel.type == 'dm'){ //Sentience
 		if(message.author.id == '139548522377641984'){
-			try{
-				currentChannel.send(message.content);
+			if(message.content.startsWith("??portalInit")){
+				var args = message.content.split(" ");
+				try{
+					bot.currentChannel = bot.client.channels.get(args[1]).createMessageCollector(message => message.member.id != bot.client.user.id);
+					message.channel.send("Listening in to " + bot.client.channels.get(args[1]).name);	
+				} catch (err){
+					message.channel.send("Error getting channel");
+					return;
+				}
+				bot.currentChannel.on('collect', m => bot.client.users.get('139548522377641984').send({embed: new Discord.MessageEmbed().setTitle(m.member.displayName).setColor(m.member.roles.color.hexColor).setDescription(m.content)}));
 				return;
-			} catch(err) {
-				message.channel.send('Error - Have you tried typing in a text channel?');
+			}
+			
+			if(message.content.startsWith("??portalStop")){
+				try{
+					bot.currentChannel.stop();
+					message.channel.send("Collector stopped");
+				} catch(err){
+					message.channel.send("No Collector to stop");
+				}
 				return;
 			}
 
+			if(bot.currentChannel && !bot.currentChannel.ended){
+				try{
+					bot.currentChannel.channel.send(message.content);
+				} catch(err) {
+					return;
+				}
+			}
+
+		} else if(message.author.id == bot.client.user.id){
+			return;
 		} else {
 			message.channel.send("Dragonite should not be used through DMs");
 		}
 
-	}else { //Everything else
+	} else { //Everything else
 		server = bot.servers[message.guild.id];
 
 		//Edge case so that users can mention dragonite to get the prefix
