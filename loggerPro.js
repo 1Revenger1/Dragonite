@@ -129,7 +129,7 @@ exports.run = (bot) => {
 				return;
 			}
 
-			var messageEmbed = new Discord.messageEmbed()
+			var messageEmbed = new Discord.MessageEmbed()
 				.setColor("#f347ff")
 				.setTitle("User banned")
 				.setThumbnail(member.user.displayAvatarURL())
@@ -149,7 +149,7 @@ exports.run = (bot) => {
 				return;
 			}
 
-			var messageEmbed = new Discord.messageEmbed()
+			var messageEmbed = new Discord.MessageEmbed()
 				.setColor("#f347ff")
 				.setTitle("User unbanned")
 				.setThumbnail(member.user.displayAvatarURL())
@@ -164,17 +164,17 @@ exports.run = (bot) => {
 		});
 
 		bot.client.on("guildMemberUpdate", (oldMember, newMember) => {
-			let server = bot.servers[guild.id];
+			let server = bot.servers[oldMember.guild.id];
 			if(server.loggingEnabled != "true"){
 				return;
 			}
 			
 			if(server.loggingUser == "true"){
 				if(oldMember.nickname != newMember.nickname){
-					var messageEmbed = new Discord.messageEmbed()
+					var messageEmbed = new Discord.MessageEmbed()
 						.setColor("#f347ff")
 						.setTitle("User nickname changed")
-						.setThumbnail(member.user.displayAvatarURL())
+						.setThumbnail(oldMember.user.displayAvatarURL())
 						.setDescription(`Old nickame: ${oldMember.displayName}\nNew nickname: ${newMember.displayName}`)
 						.setTimestamp(new Date());
 	
