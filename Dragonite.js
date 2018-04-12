@@ -93,65 +93,27 @@ bot.client.on('ready', () => {
 
 	bot.db.serialize(function() {
 		var count = 0;
+		var countAdditional = 0;
 		console.log("Loading data for guilds...");
+
+		bot.client.guilds.forEach(function(guild, id, map){
+			bot.db.get("SELECT * FROM servers WHERE serverid=" + id, function(err, row){
+				if(row == undefined){
+					newGuild(guild);
+					countAdditional++;
+				}
+			})
+		});
+
 		bot.db.each("SELECT * FROM servers", function(err, row) {
 			var server = {};
 			count++;
 			if(bot.client.guilds.has(row.serverid)){
-				let guild = bot.client.guilds.get(row.serverid);
-				server = {
-					prefix: bot.isBeta ? "??b" : row.prefix,
-					volume: row.volume/100,
-					levelsEnabled: row.levelsEnabled,
-					levelsAnnounceInDM: row.levelsAnnounceInLevels,
-					levelUpMsg: row.levelUpMsg,
-					selfAssignOn: row.selfAssignOn,
-				}
-	
-				let loggingCommands = row.loggingEnabled.split(" ");
-				server.loggingEnabled = loggingCommands[0];
-				server.loggingChannel = loggingCommands[1];
-				server.loggingEmoji = loggingCommands[2];
-				server.loggingJoin = loggingCommands[3];
-				server.loggingUser = loggingCommands[4];
-				server.loggingMessage = loggingCommands[5];
-				server.loggingRole = loggingCommands[6];
-
-				if(row.loggingChannelID){
-					server.logChannel = bot.client.guilds.get(row.serverid).channels.get(row.loggingChannelID);
-				} else {
-					server.defaultMusic = undefined;
-				}
-
-				if(row.userJoinLogChannelID){
-					server.userLogChannel = bot.client.guilds.get(row.serverid).channels.get(row.userJoinLogChannelID);
-				} else {
-					server.userLogChannel = undefined;
-				}
-
-				if(row.defaultMusicID){
-					server.defaultMusic = bot.client.guilds.get(row.serverid).channels.get(row.defaultMusicID);
-				} else {
-					server.defaultMusic = undefined;
-				}
-
-				if(row.roleIDs){
-					server.roles = [];
-					let roleIDs = row.roleIDs.split(" ");
-					for(var i = 0; i < roleIDs.length - 1; i++){
-						try{
-							server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
-						} catch(err){
-							//Do nothing if role does not exist
-						}
-					}
-				}
+				bot.servers[row.serverid] = startUpInitForGuild(row, server);
 			}
 
-			bot.servers[row.serverid] = server;
-
 		}, function(err, rows) {
-			console.log("Loading data for " + count + " guilds");
+			console.log("Loading data for " + count + " guilds\nCreated data for " + countAdditional + " additional guilds");
 			require(`./loggerPro.js`).run(bot);
 			fs.readdir(bot.checkLocation, (err, files) => {
 				if (err) return console.error(err);
@@ -171,7 +133,7 @@ bot.client.on('ready', () => {
 				const json = fs.readFileSync("./Restart.json");
 				let restart = JSON.parse(json);
 				if (restart != "") {
-				  bot.client.channels.get(restart).send(`Dragonite restarted!\nLoaded data for ` + count + ` guilds\nLoaded ` + files.length + ` commands!`);
+				  bot.client.channels.get(restart).send(`Dragonite restarted!\nLoaded data for ` + count + ` guilds\nCreated data for ${countAdditional} additional guilds\nLoaded ` + files.length + ` commands!`);
 				  restart = "";
 				  fs.writeFileSync("./Restart.json", JSON.stringify(restart, null, 3));
 				}
@@ -180,24 +142,87 @@ bot.client.on('ready', () => {
 	});
 });
 
-bot.client.on('guildCreate', guild => {
-	var server = bot.servers[guild.id];
+function newGuild(guild){
+	bot.servers[guild.id] = {};
+	var server = bot.servers[guild.id]
 	bot.db.get("SELECT serverid FROM servers WHERE serverid = " + guild.id, function(err, row){
 		if(row != undefined){
+			console.log("Duplicate Server");
 			return;
 		} else {
 			bot.db.run("INSERT INTO servers (serverid, volume) VALUES(" + guild.id +", 50)");
 
 			server.prefix = '??';
 			
-			server.defaultMusic = "No music channel selected";
+			server.defaultMusic = null;
 			bot.db.run("UPDATE servers SET defaultMusicID=null WHERE serverid = " + guild.id);
 		}
+
+		bot.db.get("SELECT * FROM servers WHERE serverid=" + guild.id, function(err, row){
+			bot.servers[guild.id] = startUpInitForGuild(row, server);
+		});
 	});
+}
+
+function startUpInitForGuild(row, server){
+	let guild = bot.client.guilds.get(row.serverid);
+	server = {
+		prefix: bot.isBeta ? "??b" : row.prefix,
+		volume: row.volume/100,
+		levelsEnabled: row.levelsEnabled,
+		levelsAnnounceInDM: row.levelsAnnounceInLevels,
+		levelUpMsg: row.levelUpMsg,
+		selfAssignOn: row.selfAssignOn,
+	}
+
+	let loggingCommands = row.loggingEnabled.split(" ");
+	server.loggingEnabled = loggingCommands[0];
+	server.loggingChannel = loggingCommands[1];
+	server.loggingEmoji = loggingCommands[2];
+	server.loggingJoin = loggingCommands[3];
+	server.loggingUser = loggingCommands[4];
+	server.loggingMessage = loggingCommands[5];
+	server.loggingRole = loggingCommands[6];
+
+	if(row.loggingChannelID){
+		server.logChannel = bot.client.guilds.get(row.serverid).channels.get(row.loggingChannelID);
+	} else {
+		server.defaultMusic = undefined;
+	}
+
+	if(row.userJoinLogChannelID){
+		server.userLogChannel = bot.client.guilds.get(row.serverid).channels.get(row.userJoinLogChannelID);
+	} else {
+		server.userLogChannel = undefined;
+	}
+
+	if(row.defaultMusicID){
+		server.defaultMusic = bot.client.guilds.get(row.serverid).channels.get(row.defaultMusicID);
+	} else {
+		server.defaultMusic = undefined;
+	}
+
+	if(row.roleIDs){
+		server.roles = [];
+		let roleIDs = row.roleIDs.split(" ");
+		for(var i = 0; i < roleIDs.length - 1; i++){
+			try{
+				server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
+			} catch(err){
+				//Do nothing if role does not exist
+			}
+		}
+	}
+	return server;
+}
+
+bot.client.on('guildCreate', guild => {
+	bot.servers[row.serverid] = newGuild(guild);
 });
 
 bot.client.on('guildDelete', guild => {
 	bot.db.run("DELETE FROM servers WHERE serverid=" + guild.id);
+	bot.servers[guild.id] = null;
 });
 
 bot.client.on('message', message => {
@@ -242,7 +267,11 @@ bot.client.on('message', message => {
 		}
 
 	} else { //Everything else
-		server = bot.servers[message.guild.id];
+		try{
+			server = bot.servers[message.guild.id];
+		} catch (err){
+			Console.log("Error getting server from " + message.guild.id + " : " + message.guild.name);
+		}
 
 		//Edge case so that users can mention dragonite to get the prefix
 		if(message.content.toLowerCase().indexOf(message.guild.me.toString()) !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1){

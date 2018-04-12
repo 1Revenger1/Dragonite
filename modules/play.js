@@ -1,5 +1,6 @@
 const ytdl = require('ytdl-core');
 const request = require('request');
+const prettyMs = require('pretty-ms');
 
 module.exports = {
     name: "play",
@@ -13,10 +14,7 @@ module.exports = {
         const server = bot.servers[message.guild.id];
         const ytkey = require(`../Dragonite.js`).tokens().ytKey();
 
-        if(!args[1] && (args[1].indexOf('youtube') < 0) && (args[1].indexOf('youtu.be') < 0)){
-            message.channel.send('Please provide a link');
-            return;
-        }
+
         
         if(!server.Vconnection){ //checks if bot is in a voice channel
             try{
@@ -24,6 +22,16 @@ module.exports = {
             } catch(err) {
                 return;
             }
+        }
+
+        if(args.length < 2){
+            message.channel.send("Please give a link/search term");
+            return;
+        }
+
+        if(args[1] && (args[1].indexOf('youtube') < 0) && (args[1].indexOf('youtu.be') < 0)){
+            await require(`./search.js`).run(bot, message, args, true)
+            return;
         }
     
         if(!server.queue) {
@@ -105,7 +113,7 @@ module.exports = {
                 
                 server.queue.push(song);
             
-                message.channel.send(song.title + ' by ' + song.author + ' added to queue');
+                message.channel.send(song.title + ' by ' + song.author + ' added to queue. Will be played in `' + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + '`');
 
                 bot.commands.get("musicplay").run(bot, message, args, true);
             });

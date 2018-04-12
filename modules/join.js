@@ -4,6 +4,7 @@ module.exports = {
     helpDesc: "Called automatically with Play and Search. Has the bot join the user's voice channel",
 	helpTitle: "Join",
 	cat: "music",
+	ignore: true,
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
     

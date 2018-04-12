@@ -9,14 +9,18 @@ module.exports = {
 	helpTitle: "Search (optional: display) <search terms>",
 	cat: "music",
     aliases: [],
-    run: async (bot, message, args) => {
+    run: async (bot, message, args, dontDisplay) => {
         var dragonite = `../Dragonite.js`;
     
         const server = bot.servers[message.guild.id];
 		const ytkey = require(dragonite).tokens().ytKey();
 		
+		if(!dontDisplay){
+			dontDisplay = false;
+		}
+
 		let searchTerm = '';
-		let isDisplay = (args[1].toLowerCase() == 'display');
+		let isDisplay = (!dontDisplay);
 		let startValue = 1;
 
 		if(!server.queue) {
@@ -31,7 +35,7 @@ module.exports = {
 			}
 		}
 		
-
+		console.log("Search running: " + isDisplay);
 		
 		if(isDisplay){
 			startValue++;
