@@ -27,6 +27,12 @@ module.exports = {
 		
 		bot.db.run('UPDATE servers SET volume=' + args[1] + ' WHERE serverid=' + message.guild.id);
 		server.volume = args[1]/100;
+		
+		message.channel.send("Volume set to " + args[1]);
+		if(!server.dispatcher){
+			return;
+		}
+
 		try{
 			clearInterval(server.volumeInterval);
 
@@ -38,6 +44,7 @@ module.exports = {
 		}catch(err){
 			console.log(err);
 		}
+
     }
 }
 

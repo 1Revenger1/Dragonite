@@ -9,7 +9,7 @@ module.exports = {
     cat: "music",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
-    
+        console.log("WTH is this running");
         const server = bot.servers[message.guild.id];
         
         if(server.dispatcher && !server.dispatcher.paused){

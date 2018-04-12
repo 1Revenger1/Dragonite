@@ -13,8 +13,6 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
         const ytkey = require(`../Dragonite.js`).tokens().ytKey();
-
-
         
         if(!server.Vconnection){ //checks if bot is in a voice channel
             try{
@@ -26,6 +24,11 @@ module.exports = {
 
         if(args.length < 2){
             message.channel.send("Please give a link/search term");
+            return;
+        }
+
+        if(args[1].indexOf('youtube') < 0 && args[1].indexOf('youtu.be') < 0 && (args[1].indexOf('www') > -1 || args[1].indexOf('http') > -1)){
+            message.channel.send("Invalid link");
             return;
         }
 
@@ -111,6 +114,13 @@ module.exports = {
                     song.begin = 0;
                 }
                 
+                var totalTimeLeft = 0;
+                for(var i = 0; i < server.queue.length; i++){
+                    totalTimeLeft += server.queue[i].time;
+                }
+
+                totalTimeLeft -= server.dispatcher.totalStreamTime;
+
                 server.queue.push(song);
             
                 message.channel.send(song.title + ' by ' + song.author + ' added to queue. Will be played in `' + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + '`');

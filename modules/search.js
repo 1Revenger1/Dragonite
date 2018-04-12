@@ -35,8 +35,6 @@ module.exports = {
 			}
 		}
 		
-		console.log("Search running: " + isDisplay);
-		
 		if(isDisplay){
 			startValue++;
 		}
@@ -61,7 +59,7 @@ module.exports = {
 			}			
 			
 			if(server.infoArray != null){
-				message.channel.send("Search already running - Please wait");
+				message.channel.send("Search already running - Please wait before running the command again");
 				return;
 			}
 
@@ -79,6 +77,7 @@ module.exports = {
 					whichResultString += (i + 1) + ") Error - Do not select";
 				}
 			}
+			whichResultString += (results.pageInfo.resultsPerPage + 1) + ") Select to exit";
 
 			message.channel.send(whichResultString);
 
@@ -94,6 +93,12 @@ module.exports = {
 
 					try{
 						var number = Number.parseInt(mText) - 1;
+						if(number == 5){
+							server.collector.stop('Selected');
+							message.channel.send("Selection stopped");
+							return;
+						}
+
 						if(server.infoArray[number] && server.infoArray[number] != null){
 
 							var info = server.infoArray[number];
