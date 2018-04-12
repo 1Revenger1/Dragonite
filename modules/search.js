@@ -5,7 +5,7 @@ const prettyMs = require('pretty-ms');
 
 module.exports = {
 	name: "search",
-	helpDesc: "Search for songs on youtube. Ex: `??Search display Gas Gas Gas` (displays result rather than putting it into music queue)",
+	helpDesc: "Search for songs on youtube and display results. Ex: `??Search Gas Gas Gas` ",
 	helpTitle: "Search (optional: display) <search terms>",
 	cat: "music",
     aliases: [],

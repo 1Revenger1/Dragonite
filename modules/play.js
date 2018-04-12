@@ -6,7 +6,7 @@ module.exports = {
     name: "play",
     aliases: [],    
     helpDesc: "Play a song or playlist from youtube.",
-    helpTitle: "Play <youtube link>",
+    helpTitle: "Play <youtube link/search terms>",
     cat: "music",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
