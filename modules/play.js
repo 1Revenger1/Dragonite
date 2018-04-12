@@ -119,7 +119,9 @@ module.exports = {
                     totalTimeLeft += server.queue[i].time;
                 }
 
-                totalTimeLeft -= server.dispatcher.totalStreamTime;
+                if(server.dispatcher){
+                    totalTimeLeft -= server.dispatcher.totalStreamTime;
+                }
 
                 server.queue.push(song);
             
