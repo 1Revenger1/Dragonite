@@ -64,6 +64,7 @@ exports.run = (bot) => {
 
 		bot.client.on("messageDelete", message => {
 			try{
+				if(isDM(message)) return;
 				let server = bot.servers[message.guild.id];
 				if(server.loggingEnabled != "true" || server.loggingMessage != "true"){
 					return;
@@ -85,6 +86,7 @@ exports.run = (bot) => {
 
 		bot.client.on("messageDeleteBulk", message => {
 			try{
+				if(isDM(message)) return;
 				let server = bot.servers[message.first().guild.id];
 				if(server.loggingEnabled != "true" || server.loggingMessage != "true"){
 					return;
@@ -104,6 +106,7 @@ exports.run = (bot) => {
 		
 		bot.client.on("messageUpdate", (oldMessage, newMessage) => {
 			try{
+				if(isDM(oldMessage)) return;
 				var server = null;
 
 				server = bot.servers[oldMessage.guild.id];
@@ -236,6 +239,8 @@ exports.run = (bot) => {
 	}
 	
 	
-	
+	function isDM(message){
+		return message.channel.type == 'dm';
+	}
 	//User Welcome/Leave
 }
