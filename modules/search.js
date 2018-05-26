@@ -6,7 +6,7 @@ const prettyMs = require('pretty-ms');
 module.exports = {
 	name: "search",
 	helpDesc: "Search for songs on youtube and display results. Ex: `??Search Gas Gas Gas` ",
-	helpTitle: "Search (optional: display) <search terms>",
+	helpTitle: "Search <search terms>",
 	cat: "music",
     aliases: [],
     run: async (bot, message, args, dontDisplay) => {
@@ -26,14 +26,6 @@ module.exports = {
 		if(!server.queue) {
 			server.queue = [];
 		}
-	
-		if(!server.Vconnection && !isDisplay){ //checks if bot is in a voice channel
-			try{
-				await bot.commands.get("join").run(bot, message, args);
-			} catch(err) {
-				return;
-			}
-		}
 		
 		if(isDisplay){
 			startValue++;
@@ -42,6 +34,8 @@ module.exports = {
 		for(var i = startValue; i < args.length; i++){
 			searchTerm += args[i] + " ";
 		}
+
+		let searchMessage = await message.channel.send("Currently searching... Please wait for a few seconds.");
 		
 		request('https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=' + encodeURIComponent(searchTerm) + '&key=' + ytkey, async (error, response, body) => {
 			var results = JSON.parse(body);
@@ -72,14 +66,12 @@ module.exports = {
 
 					whichResultString += (i + 1) + ") " + info.title + " by " + info.author.name + "\n";
 				} catch(err){
-					console.log(err);
-					server.infoArray[0] = null;
+					server.infoArray[i] = null;
 					whichResultString += (i + 1) + ") Error - Do not select";
 				}
 			}
 			whichResultString += (results.pageInfo.resultsPerPage + 1) + ") Select to exit";
-
-			message.channel.send(whichResultString);
+			searchMessage.edit(whichResultString);
 
 			server.collector = message.channel.createMessageCollector(m => m.member.id == message.member.id, { time: 60000 });
 
@@ -109,7 +101,7 @@ module.exports = {
 								try {
 									const newt = info.thumbnail_url.replace("default", "maxresdefault");
 									await request(newt, async(error, response, body) => {
-										info.thumbnail = error ? info.thumbnail_url.replace("default", "hqdefault") : newt;
+										info.thumbnail = error != null ? info.thumbnail_url.replace("default", "hqdefault") : newt;
 										createEmbed(info, results.items[number].id.videoID, message);
 									});
 								} catch(e) {
@@ -121,6 +113,9 @@ module.exports = {
 								var totalTimeLeft = 0;
 								for(var i = 0; i < server.queue.length; i++){
 									totalTimeLeft += server.queue[i].time;
+								}
+								if(server.dispatcher){
+									totalTimeLeft -= server.dispatcher.totalStreamTime;
 								}
 								server.queue.push(song = {
 									url: "https://www.youtube.com/watch?v=" + results.items[number].id.videoId,

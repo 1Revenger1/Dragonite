@@ -14,7 +14,7 @@ module.exports = {
             server.Vconnection = null;
             server.queue = null;
             server.isPlaying = false;
-            message.channel.send("Left the voice channel and emptied queue");
+            //message.channel.send("Left the voice channel and emptied queue");
         } else {
             message.channel.send('I\'m not in a voice channel...');
         }

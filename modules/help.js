@@ -10,7 +10,7 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
 		
-		var helpString = "***__Dragonite Commands__***\nUse " + server.prefix + " or @Dragonite to call commands\n\n"		
+		var helpString = "***__Dragonite Commands__***\nUse " + server.prefix + " or <@" + bot.client.user + "> to call commands\n\n"		
 
 		var generalString = "**__General__**\n";
 		var adminString = "**__Administration__**\n";

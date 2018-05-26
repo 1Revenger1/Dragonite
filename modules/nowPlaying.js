@@ -17,7 +17,6 @@ module.exports = {
 			message.channel.send('Currently not playing anything');
 			return;
 		} else {
-			message.channel.startTyping();
 			const info = ytdl.getInfo(server.queue[0].url)
 				.then(info => {
 					var progressString = '    | ';
@@ -46,7 +45,6 @@ module.exports = {
 						
 	
 					message.channel.send({embed : optionsEmbed});
-					message.channel.stopTyping();
 				});
 		}
     }

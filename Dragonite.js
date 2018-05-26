@@ -6,6 +6,8 @@ const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 bot.moment = require('moment-timezone');
 bot.db = new sqlite3.Database('database.txt');
+bot.fightDB = new sqlite3.Database('fightDB.txt');
+bot.started = false;
 
 const loginLocation = `../../../login.js`;
 
@@ -22,6 +24,7 @@ bot.version = '0-v7.0.0';
 bot.versionBeta = '.3';
 bot.checkLocation;
 bot.isBeta = false;
+bot.changeGameTimerOn = true;
 
 var myArgs = process.argv.slice(2);
 switch(myArgs[0]){
@@ -37,6 +40,7 @@ switch(myArgs[0]){
 		break;
 	case '-c': bot.client.login(Tokens.betaToken());
 		bot.version = bot.version + ' Release Canidate';
+		bot.changeGameTimerOn = false;
 		bot.isBeta = true;
 		bot.checkLocation = 'modulesBeta';
 		break;
@@ -66,7 +70,7 @@ function changeGame() {
 
 bot.db.serialize(function() {
 	bot.db.run("CREATE TABLE IF NOT EXISTS servers(serverid TEXT, prefix TEXT DEFAULT '??', volume TEXT DEFAULT 50,  levelsEnabled TEXT DEFAULT false, levelsAnnounceInDM TEXT DEFAULT false, levelupMsg TEXT DEFAULT 'Congrats, you have leveled up!', roleIDs TEXT, selfAssignOn TEXT DEFAULT false)");
-	
+
 	/*
 	db.run("ALTER TABLE servers ADD COLUMN levelsEnabled");
 	db.run("Alter Table servers ADD COLUMN levelsAnnounceInDM");
@@ -86,6 +90,12 @@ bot.db.serialize(function() {
 
 
 bot.client.on('ready', () => {
+	if(bot.started){
+		console.log("Ready event fired: " + new Date());
+		return;
+	}
+
+	bot.started = true;
 	bot.moment().tz("America/Los_Angeles").format();
 	bot.commands = new Discord.Collection();
 	bot.aliases = new Discord.Collection();
@@ -126,9 +136,12 @@ bot.client.on('ready', () => {
 					});
 				});
 				console.log('I am ready!');
-				setInterval(changeGame, 10000);
+				if(bot.changeGameTimerOn){
+					setInterval(changeGame, 10000);
+				} else {
+					bot.client.user.setActivity("Release Canidate!");
+				}
 				isTakingCommands = true;
-				
 				//Parse restart
 				const json = fs.readFileSync("./Restart.json");
 				let restart = JSON.parse(json);
@@ -225,7 +238,7 @@ bot.client.on('guildDelete', guild => {
 	bot.servers[guild.id] = null;
 });
 
-bot.client.on('message', message => {
+bot.client.on('message', async message => {
     //Command Start
 	if(message.channel.type == 'dm'){ //Sentience
 		if(message.author.id == '139548522377641984'){
@@ -274,7 +287,7 @@ bot.client.on('message', message => {
 		}
 
 		//Edge case so that users can mention dragonite to get the prefix
-		if(message.content.toLowerCase().indexOf(message.guild.me.toString()) !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1){
+		if(message.content.toLowerCase().indexOf(message.guild.me.toString()) !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1 && message.member.id != bot.client.user.id){
 			message.channel.send('Use `@' + message.guild.me.displayName + ' help` to see prefix and get help for commands');
 			return;
 		}
@@ -308,6 +321,10 @@ bot.client.on('message', message => {
 
 			var command = bot.commands.get(commandArg);
 
+			if(command == undefined){
+				return;
+			}
+
 			//Check permissions to make sure the user can run the command
 			if(command.permLevel && command.permLevel != levels.level_0){
 				if(command.permLevel == levels.level_3 && message.member.id != '139548522377641984'){
@@ -320,22 +337,31 @@ bot.client.on('message', message => {
 					return;
 				}
 			}
-
+			message.channel.startTyping();
 			//Run the command
-			command.run(bot, message, args);
+			await command.run(bot, message, args);
+
+			message.channel.stopTyping();
 		} catch (err){
+			console.log(err.stack);
+			message.channel.stopTyping();
 			return;
 		}
 	}
 });
 
 bot.client.on('error', error => {
-	var stream = fs.createWriteStream('ConnectionError.log');
-	stream.once('open', fd => {
-		stream.write(bot.moment().format() + ":" + error.name + " -> " + error.message);
-		stream.end();
-		process.exit();
-	});
+	// var stream = fs.createWriteStream('ConnectionError.log');
+	// stream.once('open', fd => {
+	// 	stream.write(bot.moment().format() + ":" + error.name + " -> " + error.message);
+	// 	stream.end();
+	// 	process.exit();
+	// });
+	console.log("Error: " + new Date());
+});
+
+bot.client.on('disconnect', error => {
+	console.log("Disconnect: " + new Date());
 });
 
 bot.getRole = async function(type, v, g) {
@@ -344,6 +370,10 @@ bot.getRole = async function(type, v, g) {
 	} else if (type == "name") {
 	  return g.roles.find(r => r.name.toLowerCase() === v.toLowerCase());
 	}
+}
+
+bot.sleep = async function(millis) {
+	return new Promise(resolve => setTimeout(resolve, millis));
 }
 
 bot.checkRoleExists = async function(type, v, g){

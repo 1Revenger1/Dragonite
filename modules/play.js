@@ -13,14 +13,6 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
         const ytkey = require(`../Dragonite.js`).tokens().ytKey();
-        
-        if(!server.Vconnection){ //checks if bot is in a voice channel
-            try{
-                await bot.commands.get("join").run(bot, message, args);
-            } catch(err) {
-                return;
-            }
-        }
 
         if(args.length < 2){
             message.channel.send("Please give a link/search term");

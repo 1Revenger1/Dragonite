@@ -21,7 +21,6 @@ module.exports = {
 				throw new Error('I cannot join this voice channel!');
 			}
 			let connection = await message.member.voiceChannel.join();
-			server.Vconnection = connection;
 			message.reply('I have successfully connected to `' + message.member.voiceChannel.name + '`');
 		} else {
 			message.channel.send('You need to join a voice channel first');

@@ -146,7 +146,6 @@ module.exports = {
                     message.channel.send("Logging Control Panel. Use `" + server.prefix + "options logging \"true\"/\"false\"` to enable logging.\n\n" + 
                                         "**Other Options:**\n`" + server.prefix + "options logging setLoggingChannel/setJoinLoggingChannel <Name of text channel>`\nSets the logging channel. Join Logging is for when users join/leave\n\n" +
                                         "`" + server.prefix + "options logging \"channel\"/\"Join\"/etc... \"true\"/\"false\"`\nEnables or Disables different modules of the logger.");
-                    message.channel.send("Not implemented yet");
                 }
                 break;
             default:

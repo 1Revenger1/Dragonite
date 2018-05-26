@@ -11,22 +11,22 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
         
-        if(!isPlayBot) {message.channel.send("This event is not supposed to be triggered standalone!"); return;}
+        if(!isPlayBot) {message.channel.send("This event is not supposed to be triggered by a user!"); return;}
 		
-        if(!server.Vconnection){ //checks if bot is in a voice channel
-            require(`./join.js`).run(bot, message, args);
+        if(!message.guild.voiceConnection){ //checks if bot is in a voice channel
+            await require(`./join.js`).run(bot, message, args);
         }
         
         if(!server.isPlaying){
             server.isPlaying = true;
             
             try{
-                server.dispatcher = server.Vconnection.play(ytdl(server.queue[0].url, {begin: server.queue[0].begin}));
+                server.dispatcher = message.guild.voiceConnection.play(ytdl(server.queue[0].url, {begin: server.queue[0].begin}));
                 server.dispatcher.setVolume(server.volume);
                 server.queue[0].loop = 0;
                 server.queue[0].channel.send('Now playing ' + server.queue[0].title);
             } catch(err) {
-                console.log(err);
+                console.log(err.stack);
                 message.channel.send('Error playing music - Try making sure Dragonite is in a voice channel');
                 server.isPlaying = false;
                 return;
@@ -42,7 +42,6 @@ module.exports = {
             server.dispatcher = null;
             
             if(server.queue === null){
-                console.log(server.queue);
                 message.channel.send('Dragonite stopped and queue emptied');
                 return;
             }
@@ -51,13 +50,36 @@ module.exports = {
             if(server.queue[0]){
                 bot.commands.get("musicplay").run(bot, message, args, true);
             } else {
+                setTimeout(emptyQueueHandeler, 60000, server, message); //(60000ms) 1 minute timeout before leaving if nothing else is queued.
                 message.channel.send('Playlist finished. Use ' + server.prefix + 'leave to have the bot leave the voice channel.');
                 return;
             }
         });
 
         server.dispatcher.on("error", (err) =>{
-            console.log(err);
+            console.log(err.stack);
         });
+
+        //Handles an empty queue - May eventually play from a list of music predifined in a db?
+        async function emptyQueueHandeler(server, message){
+            try{
+                if((server.isPlaying) || (server.queue && server.queue.length > 0)){
+                    return;
+                }
+            } catch (err) {
+                console.log(err.stack);
+            }
+
+
+            if(message.guild.voiceConnection){
+                try {
+                    message.channel.send("Disconnected from `" + message.guild.voiceConnection.channel.name + "` due to lack of queued songs.");
+                    message.guild.voiceConnection.disconnect();
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }
     }
 }
+
