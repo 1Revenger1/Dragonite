@@ -59,4 +59,6 @@ typings/
 .env
 
 database.txt
-/eventsBeta
+/modulesBeta
+Logging Notes.txt
+fightDB.txt
