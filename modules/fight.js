@@ -13,6 +13,18 @@ module.exports = {
             return;
         }
 
+        if(message.mentions.everyone){
+            message.channel.send("How are you supposed to fight everyone here? That seems *really* difficult...");
+            server.isFighting = false;
+            return;
+        }
+        
+        if(message.mentions.users.size < 1){
+            message.channel.send("Please mention a user");
+            server.isFighting = false;
+            return;
+        }
+
         server.isFighting = true;
 
         var sqlDataPer1 = null;
@@ -73,18 +85,6 @@ module.exports = {
 
             var damage = [ 25, 50, 75, 100, 125, 150, 200, 250]
             var messagesToDelete = [];
-
-            if(message.mentions.everyone){
-                message.channel.send("How are you supposed to fight everyone here? That seems *really* difficult...");
-                server.isFighting = false;
-                return;
-            }
-            
-            if(message.mentions.users.size < 1){
-                message.channel.send("Please mention a user");
-                server.isFighting = false;
-                return;
-            }
             
             if(message.mentions.members.first().id == message.member.id){
                 message.channel.send("Hold up - I'm stopping it right here. No fighing yourself");
@@ -97,7 +97,7 @@ module.exports = {
                 member: message.member,
                 level: await levelUtil.calcLevel(sqlDataPer1.EXP),
                 exp: parseFloat(sqlDataPer1.EXP),
-                hp: 1000,
+                hp: 500,
                 speed: 100,
                 damage: 100,
                 expm: 1,
@@ -108,7 +108,7 @@ module.exports = {
                 member: message.mentions.members.first(),
                 level: await levelUtil.calcLevel(sqlDataPer2.EXP),
                 exp: parseFloat(sqlDataPer2.EXP),
-                hp: 1000,
+                hp: 500,
                 speed: 100,
                 damage: 100,
                 expm: 1,
@@ -153,14 +153,14 @@ module.exports = {
 
             if(personOne.hp <= 0){
                 var expGain = levelUtil.randEXP();
-                message.channel.send(personOne.member.toString() + " lost but gained " + Math.floor(expGain / 2) + " EXP. Sorry :(\n " + personTwo.member.toString() + " won and gained " + Math.floor(expGain * 4) + " EXP! Come Again!");
+                message.channel.send(personOne.member.toString() + " lost but gained " + Math.floor(expGain / 2) + " EXP. Sorry :(\n " + personTwo.member.toString() + " won and gained " + Math.floor(expGain * 2) + " EXP! Come Again!");
                 personOne.exp += Math.floor(expGain / 2);
-                personTwo.exp += Math.floor(expGain * 4);
+                personTwo.exp += Math.floor(expGain * 2);
             } else {
                 var expGain = levelUtil.randEXP();
-                message.channel.send(personOne.member.toString() + " won and gained " + Math.floor(expGain * 4) + " EXP!\n " + personTwo.member.toString() + " lost but gained " + Math.floor(expGain / 2) + " EXP. Sorry :( Come Again!");
+                message.channel.send(personOne.member.toString() + " won and gained " + Math.floor(expGain * 2) + " EXP!\n " + personTwo.member.toString() + " lost but gained " + Math.floor(expGain / 2) + " EXP. Sorry :( Come Again!");
                 personTwo.exp += Math.floor(expGain / 2);
-                personOne.exp += Math.floor(expGain * 4);
+                personOne.exp += Math.floor(expGain * 2);
             }
 
             if(personOne.level != await levelUtil.calcLevel(personOne.exp)){
