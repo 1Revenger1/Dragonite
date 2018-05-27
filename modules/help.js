@@ -4,7 +4,7 @@ module.exports = {
 	name: "help",
     helpDesc: "Returns Dragonite's commands",
 	helpTitle: "Help",
-    aliases: [],
+    aliases: ["h"],
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
     

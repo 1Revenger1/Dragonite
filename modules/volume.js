@@ -1,8 +1,8 @@
 module.exports = {
     name: "volume",
-    aliases: [],    
+    aliases: ["v"],    
     helpDesc: "Set the volume of music output for Dragonite",
-	helpTitle: "Volume <number between 0-100>",
+	helpTitle: "Volume, V <number between 0-100>",
 	cat: "music",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;

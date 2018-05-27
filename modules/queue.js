@@ -3,9 +3,9 @@ const prettyMs = require('pretty-ms');
 
 module.exports = {
     name: "queue",
-    aliases: [],    
+    aliases: ["playlist"],    
     helpDesc: "Shows the current list of songs",
-    helpTitle: "Queue <page #>",
+    helpTitle: "Queue, Playlist <page #>",
     cat: "music",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
