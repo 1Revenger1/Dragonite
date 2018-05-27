@@ -50,7 +50,7 @@ module.exports = {
             if(server.queue[0]){
                 bot.commands.get("musicplay").run(bot, message, args, true);
             } else {
-                setTimeout(emptyQueueHandeler, 60000, server, message); //(60000ms) 1 minute timeout before leaving if nothing else is queued.
+                server.timeout = setTimeout(emptyQueueHandeler, 180000, server, message); //(60000ms) 1 minute timeout before leaving if nothing else is queued.
                 message.channel.send('Playlist finished. Use ' + server.prefix + 'leave to have the bot leave the voice channel.');
                 return;
             }

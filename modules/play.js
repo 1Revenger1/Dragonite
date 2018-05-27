@@ -14,6 +14,16 @@ module.exports = {
         const server = bot.servers[message.guild.id];
         const ytkey = require(`../Dragonite.js`).tokens().ytKey();
 
+		if(!message.member.voiceChannelID || (message.guild.voiceConnection && message.member.voiceChannelID != message.guild.voiceConnection.channel.id)){
+			message.channel.send("Please join a voice channel before requesting a song.\nYou must also be in the same voice channel as me");
+			return
+		}
+		
+		if(server.timeout){
+			clearTimeout(server.timeout);
+			server.timeout = null;
+		}
+		
         if(args.length < 2){
             message.channel.send("Please give a link/search term");
             return;
