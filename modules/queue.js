@@ -38,8 +38,14 @@ module.exports = {
         var queueS = "__Page **" + (page + 1) + "** of **" + pages + "**__\n";
 
         queueS += "Now playing " + server.queue[0].title + " by " + server.queue[0].author + "\n";
-        queueS += "Time left: `" + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + "` Songs left: `" + (server.queue.length - 1) + "`\n\n";
+
+        if(!(totalTimeLeft <= 0)){
+            queueS += "Time left: `" + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + "` Songs left: `" + (server.queue.length - 1) + "`\n\n";
+        } else {
+            queueS += "\n";
+        }
         for(var i = 1; (10 * page + i) < server.queue.length && i <= 10; i++){
+
             queueS += "`[" + (i + 10 * page) + "]` " + server.queue[i + 10 * page].title + " by " + server.queue[i + 10 * page].author + " \n";
         }
 

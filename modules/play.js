@@ -1,4 +1,5 @@
 const ytdl = require('ytdl-core');
+const youtube = require('youtube-dl');
 const request = require('request');
 const prettyMs = require('pretty-ms');
 
@@ -29,12 +30,7 @@ module.exports = {
             return;
         }
 
-        if(args[1].indexOf('youtube') < 0 && args[1].indexOf('youtu.be') < 0 && (args[1].indexOf('www') > -1 || args[1].indexOf('http') > -1)){
-            message.channel.send("Invalid link");
-            return;
-        }
-
-        if(args[1] && (args[1].indexOf('youtube') < 0) && (args[1].indexOf('youtu.be') < 0)){
+        if(args[1] && (args[1].indexOf('http') < 0) && (args[1].indexOf('https') < 0)){
             await require(`./search.js`).run(bot, message, args, true)
             return;
         }
@@ -45,7 +41,7 @@ module.exports = {
     
         var song = {};
         var nextPageToken;
-        if(args[1].indexOf("playlist?list=") >= 0){
+        if(args[1].indexOf("playlist?list=") >= 0 && (args[1].indexOf("youtube") >= 0 || args[1].indexOf("youtu.be") >= 0)){
 			let songErrorCount = 0;
             let playlistID = args[1].split('=');
 			message.channel.send("Importing playlist - You may need to wait a minute for the music to start so we can buffer the playlist");
@@ -101,34 +97,73 @@ module.exports = {
                 });
             }
         } else {
-            ytdl.getInfo(args[1], function(err, info) {
-                song = {
-                    url: args[1],
-                    title: info.title,
-                    author: info.author.name,
-                    channel: message.channel,
-                    time: info.length_seconds * 1000
+            youtube.getInfo(args[1], ["--flat-playlist", "--yes-playlist", "-i"] ,function(err, info) {
+                if(info == undefined){
+                    message.channel.send('Unable to find video');
+                    return;
                 }
-                
-                if(args[2] && (args[2].indexOf('h|s|m|:') != 1)){
-                    song.begin = args[2];
+
+                if(info.length){
+                    for(var i = 0; i < info.length; i++){
+                        if(info[i]._duration_raw == undefined){
+                            info[i]._duration_raw = 0;
+                        }
+
+                        console.log(info[i]);
+
+                         song = {
+                            url: info[i].url,
+                            title: info[i].title,
+                            author: info[i].uploader,
+                            channel: message.channel,
+                            time: info[i]._duration_raw * 1000
+                        }
+                        
+                        server.queue.push(song);
+                    }
+
+                    message.channel.send("Added " + info.length + " songs to the queue. Playing now...");
                 } else {
-                    song.begin = 0;
-                }
+                    song = {
+                        url: args[1],
+                        title: info.title,
+                        author: info.uploader,
+                        channel: message.channel,
+                        time: info._duration_raw * 1000
+                    }
+                    
+                    if(info._duration_raw == undefined){
+                        song.time = 0;
+                    }
+    
+                    if(args[2] && (args[2].indexOf('h|s|m|:') != 1)){
+                        song.begin = args[2];
+                    } else {
+                        song.begin = 0;
+                    }
+                    
+                    var totalTimeLeft = 0;
+                    var falseTime = false;
+                    for(var i = 0; i < server.queue.length; i++){
+                        totalTimeLeft += server.queue[i].time;
+                    }
+    
+                    if(server.dispatcher){
+                        totalTimeLeft -= server.dispatcher.totalStreamTime;
+                    }
+    
+                    server.queue.push(song);
+    
+                    var newMessage = song.title + ' by ' + song.author + ' added to queue.';
+    
+                    if(!falseTime && totalTimeLeft != 0){
+                        newMessage +=  ' `' + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + '` left until it is played';
+                    } else if(totalTimeLeft == 0){
+                        newMessage +=  ' Playing now...'
+                    }
                 
-                var totalTimeLeft = 0;
-                for(var i = 0; i < server.queue.length; i++){
-                    totalTimeLeft += server.queue[i].time;
+                    message.channel.send(newMessage);
                 }
-
-                if(server.dispatcher){
-                    totalTimeLeft -= server.dispatcher.totalStreamTime;
-                }
-
-                server.queue.push(song);
-            
-                message.channel.send(song.title + ' by ' + song.author + ' added to queue. Will be played in `' + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + '`');
-
                 bot.commands.get("musicplay").run(bot, message, args, true);
             });
         }

@@ -1,4 +1,5 @@
 const ytdl = require('ytdl-core');
+const youtube = require('youtube-dl');
 
 module.exports = {
     name: "musicPlay",
@@ -21,7 +22,8 @@ module.exports = {
             server.isPlaying = true;
             
             try{
-                server.dispatcher = message.guild.voiceConnection.play(ytdl(server.queue[0].url, {begin: server.queue[0].begin}));
+                // {begin: server.queue[0].begin
+                server.dispatcher = message.guild.voiceConnection.play(youtube(server.queue[0].url, ['-x']));
                 server.dispatcher.setVolume(server.volume);
                 server.queue[0].loop = 0;
                 server.queue[0].channel.send('Now playing ' + server.queue[0].title);

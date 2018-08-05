@@ -45,6 +45,8 @@ module.exports = {
 						
 	
 					message.channel.send({embed : optionsEmbed});
+				}).catch(error => {
+					message.channel.send("Error getting NP stats");
 				});
 		}
     }
