@@ -20,12 +20,13 @@ exports.randEXP = function(){
 exports.neededEXP = async function(totalEXP, expForm){
     var tempEXP = totalEXP;
     var level = 0;
-    do {
+    
+    while (tempEXP >= (5 * Math.pow((level), 2)) + (50 * (level)) + 100) {
         tempEXP -= (5 * Math.pow(level, 2)) + (50 * level) + 100;
         level++
-    } while (tempEXP >= 0)
+    }
 
-    expForm.currentEXP = tempEXP * -1;
+    expForm.currentEXP = tempEXP;
     expForm.neededEXP = (5 * Math.pow(level, 2)) + (50 * level) + 100;
     return;
 }

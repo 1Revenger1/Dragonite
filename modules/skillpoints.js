@@ -105,7 +105,7 @@ module.exports = {
         });
 
         function handleEnd(reason){
-            if(reason != 'Answer Given'){
+            if(reason != 'Answer'){
                 message.channel.send("No answer given before time-out. Please re-run the command.");
             }
         }
@@ -130,7 +130,7 @@ module.exports = {
             }
 
             message.channel.send({embed: answerEmbed})
-            message.collector.stop('Answer Given');
+            message.collector.stop('Answer');
         }
     }
 } 

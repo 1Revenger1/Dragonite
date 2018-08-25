@@ -60,6 +60,8 @@ module.exports = {
                         sqlDataPer2 = row;
                     }
 
+                    console.log(JSON.stringify(sqlDataPer1));
+                    console.log(JSON.stringify(sqlDataPer2));
                     fight();
                 });
             });
@@ -115,6 +117,14 @@ module.exports = {
                 powerup: 1
             }
 
+            if(isNaN(personOne.exp)){
+                personOne.exp = 0;
+            }
+            
+            if(isNaN(personTwo.exp)){
+                personTwo.exp = 0;
+            }
+            
             message.channel.send(`__**${personOne.member.displayName}** [lvl: ${personOne.level} ] vs **${personTwo.member.displayName}** [lvl: ${personTwo.level} ]__`);
 
             if(personTwo.member.id == '139548522377641984'){
