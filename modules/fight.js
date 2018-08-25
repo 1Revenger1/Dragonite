@@ -43,7 +43,7 @@ module.exports = {
                 }
 
                 if(row == undefined){
-                    sqlDataPer1 = newMember(message.member);
+                    sqlDataPer1 = levelUtil.newMember(message.member);
                 } else {
                     sqlDataPer1 = row;
                 }
@@ -55,7 +55,7 @@ module.exports = {
                     }
     
                     if(row == undefined){
-                        sqlDataPer2 = newMember(message.mentions.members.first());
+                        sqlDataPer2 = levelUtil.newMember(message.mentions.members.first());
                     } else {
                         sqlDataPer2 = row;
                     }
@@ -97,10 +97,10 @@ module.exports = {
                 member: message.member,
                 level: await levelUtil.calcLevel(sqlDataPer1.EXP),
                 exp: parseFloat(sqlDataPer1.EXP),
-                hp: 500,
-                speed: 100,
-                damage: 100,
-                expm: 1,
+                hp: levelUtil.calcMult(parseFloat(sqlDataPer1.HP), 500),
+                speed: levelUtil.calcMult(parseFloat(sqlDataPer1.SPEED), 100),
+                damage: levelUtil.calcMult(parseFloat(sqlDataPer1.DAMAGE), 100),
+                expm: levelUtil.calcMult(parseFloat(sqlDataPer1.EXPM), 1),
                 powerup: 1
             };
 
@@ -108,10 +108,10 @@ module.exports = {
                 member: message.mentions.members.first(),
                 level: await levelUtil.calcLevel(sqlDataPer2.EXP),
                 exp: parseFloat(sqlDataPer2.EXP),
-                hp: 500,
-                speed: 100,
-                damage: 100,
-                expm: 1,
+                hp: levelUtil.calcMult(parseFloat(sqlDataPer2.HP), 500),
+                speed: levelUtil.calcMult(parseFloat(sqlDataPer2.SPEED), 100),
+                damage: levelUtil.calcMult(parseFloat(sqlDataPer2.DAMAGE), 100),
+                expm: levelUtil.calcMult(parseFloat(sqlDataPer2.EXPM), 1),
                 powerup: 1
             }
 
@@ -180,11 +180,6 @@ module.exports = {
                     await messagesToDelete[i].delete();
                 }
             }, 5000);
-        }
-        
-        async function newMember(member){
-            bot.fightDB.run(`INSERT INTO ServerID` + member.guild.id + ` VALUES(${member.id}, 0, 0, 0, 0, 0, 0)`);
-            return { EXP: 0 };
         }
     }
 }
