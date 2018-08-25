@@ -30,7 +30,7 @@ module.exports = {
             }
 
             if(row == undefined){
-                sqlDataPer1 = await levelUtil.newMember(person);
+                sqlDataPer1 = await levelUtil.newMember(person, bot);
             } else {
                 sqlDataPer1 = row;
             }
@@ -42,7 +42,7 @@ module.exports = {
                 neededEXP: 0
             }
 
-            await levelUtil.neededEXP(sqlDataPer1.EXP, expForm);
+            levelUtil.neededEXP(sqlDataPer1.EXP, expForm);
 
             //Skillpoints left to spend
             skillPts = parseInt(sqlDataPer1.level) - (parseInt(sqlDataPer1.HP) + parseInt(sqlDataPer1.SPEED) + parseInt(sqlDataPer1.DAMAGE) + parseInt(sqlDataPer1.EXPM)) - 1;

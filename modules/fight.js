@@ -30,20 +30,20 @@ module.exports = {
         var sqlDataPer1 = null;
         var sqlDataPer2 = null;
 
-        bot.fightDB.get("CREATE TABLE IF NOT EXISTS ServerID" + message.guild.id + "(userID TEXT, EXP TEXT, HP TEXT, SPEED TEXT, DAMAGE TEXT, EXPM TEXT, POWERUP TEXT)", function(err, row){
+        bot.fightDB.get("CREATE TABLE IF NOT EXISTS ServerID" + message.guild.id + "(userID TEXT, EXP TEXT, HP TEXT, SPEED TEXT, DAMAGE TEXT, EXPM TEXT, POWERUP TEXT)", async function(err, row){
             if(err){
                 console.log(err);
                 return;
             }
             
-            bot.fightDB.get("SELECT * from ServerID" + message.guild.id + " WHERE userID=" + message.member.id, function(err, row){
+            bot.fightDB.get("SELECT * from ServerID" + message.guild.id + " WHERE userID=" + message.member.id, async function(err, row){
                 if(err){
                     console.log(err);
                     return;
                 }
 
                 if(row == undefined){
-                    sqlDataPer1 = levelUtil.newMember(message.member);
+                    sqlDataPer1 = levelUtil.newMember(message.member, bot);
                 } else {
                     sqlDataPer1 = row;
                 }
@@ -55,13 +55,10 @@ module.exports = {
                     }
     
                     if(row == undefined){
-                        sqlDataPer2 = levelUtil.newMember(message.mentions.members.first());
+                        sqlDataPer2 = levelUtil.newMember(message.mentions.members.first(), bot);
                     } else {
                         sqlDataPer2 = row;
                     }
-
-                    console.log(JSON.stringify(sqlDataPer1));
-                    console.log(JSON.stringify(sqlDataPer2));
                     fight();
                 });
             });

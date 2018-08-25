@@ -1,5 +1,4 @@
 //5 * (lvl ^ 2) + 50 * lvl + 100
-
 exports.calcLevel = async function(totalEXP){
     var tempEXP = totalEXP;
     var level = 0;
@@ -38,7 +37,7 @@ exports.calcMult = function(lvl, value){
 }
 
 //Ran whenever a member is not in the database
-exports.newMember = async function(member){
+exports.newMember = function(member, bot){
     bot.fightDB.run(`INSERT INTO ServerID` + member.guild.id + ` VALUES(${member.id}, 0, 0, 0, 0, 0, 0)`);
     return { EXP: 0,
         level: 0,
