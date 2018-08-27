@@ -20,7 +20,15 @@ module.exports = {
 				message.channel.send('I cannot join this voice channel!');
 				throw new Error('I cannot join this voice channel!');
 			}
-			let connection = await message.member.voiceChannel.join();
+
+			if(!server.player){
+				server.player = await bot.player.join({
+					guild: message.guild.id,
+					channel: message.member.voice.channel.id,
+					host: nodes[0] 
+				}, { selfdeaf: true });
+			}
+
 			message.reply('I have successfully connected to `' + message.member.voiceChannel.name + '`');
 		} else {
 			message.channel.send('You need to join a voice channel first');

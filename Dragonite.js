@@ -4,13 +4,13 @@ bot.client = new Discord.Client();
 //const readline = require('readline');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const { PlayerManager } = require("discord.js-lavalink");
 bot.moment = require('moment-timezone');
 bot.db = new sqlite3.Database('database.txt');
 bot.fightDB = new sqlite3.Database('fightDB.txt');
 bot.started = false;
 
 const loginLocation = `../../../login.js`;
-
 const Tokens = require(loginLocation);
 
 const levels = {
@@ -45,6 +45,15 @@ switch(myArgs[0]){
 		bot.checkLocation = 'modulesBeta';
 		break;
 }
+
+//lavalink
+bot.nodes = [ { host:"10.0.0.67", port: 25569, region: "us-west", password: Tokens.lavalink() }];
+
+bot.defaultRegions = {
+    asia: ["sydney", "singapore", "japan", "hongkong"],
+    eu: ["london", "frankfurt", "amsterdam", "russia", "eu-central", "eu-west"],
+    us: ["us-central", "us-west", "us-east", "us-south", "brazil"]
+};
 
 var isTakingCommands = false;
 
@@ -94,8 +103,13 @@ bot.client.on('ready', () => {
 		console.log("Ready event fired: " + new Date());
 		return;
 	}
-
 	bot.started = true;
+	
+	bot.player = new PlayerManager(bot.client, bot.nodes, {
+		user: bot.client.user.id,
+		shards: 1
+	});
+
 	bot.moment().tz("America/Los_Angeles").format();
 	bot.commands = new Discord.Collection();
 	bot.aliases = new Discord.Collection();
@@ -357,7 +371,7 @@ bot.client.on('error', error => {
 	// 	stream.end();
 	// 	process.exit();
 	// });
-	console.log("Error: " + new Date());
+	console.log("Error: " + new Date() + " -> " + error);
 });
 
 bot.client.on('disconnect', error => {
