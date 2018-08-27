@@ -10,7 +10,7 @@ module.exports = {
         const server = bot.servers[message.guild.id];
         
         if(message.guild.voiceConnection){
-            message.guild.voiceConnection.disconnect();
+            await server.player.leave(message.guild.id);
             server.Vconnection = null;
             server.queue = null;
             server.isPlaying = false;
