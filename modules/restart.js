@@ -22,7 +22,7 @@ module.exports = {
                 let restart = JSON.parse(fs.readFileSync("./Restart.json"));
                 restart = m.channel.id;
                 fs.writeFileSync("./Restart.json", JSON.stringify(m.channel.id, null, 3));
-                process.exit();
+                bot.gracefulShutdown();
             } else if(m.content.toLowerCase() == "no"){
                 bot.collector.stop("Selected no - Ending selection")
             }

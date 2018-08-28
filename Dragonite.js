@@ -4,13 +4,13 @@ bot.client = new Discord.Client();
 //const readline = require('readline');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const { PlayerManager } = require("discord.js-lavalink");
 bot.moment = require('moment-timezone');
 bot.db = new sqlite3.Database('database.txt');
 bot.fightDB = new sqlite3.Database('fightDB.txt');
 bot.started = false;
 
 const loginLocation = `../../../login.js`;
-
 const Tokens = require(loginLocation);
 
 const levels = {
@@ -20,8 +20,8 @@ const levels = {
 	level_3: "Level 3 : Owner"
 }
 
-bot.version = '0-v7.0.0';
-bot.versionBeta = '.3';
+bot.version = '0-v8.0.0';
+bot.versionBeta = '.1';
 bot.checkLocation;
 bot.isBeta = false;
 bot.changeGameTimerOn = true;
@@ -45,6 +45,9 @@ switch(myArgs[0]){
 		bot.checkLocation = 'modulesBeta';
 		break;
 }
+
+//lavalink
+bot.nodes = [{ host:"10.0.0.67", port: 25569, region: "us-west", password: Tokens.lavalink() }]
 
 var isTakingCommands = false;
 
@@ -94,8 +97,13 @@ bot.client.on('ready', () => {
 		console.log("Ready event fired: " + new Date());
 		return;
 	}
-
 	bot.started = true;
+	
+	bot.manager = new PlayerManager(bot.client, bot.nodes, {
+		user: bot.client.user.id,
+		shards: 1
+	});
+
 	bot.moment().tz("America/Los_Angeles").format();
 	bot.commands = new Discord.Collection();
 	bot.aliases = new Discord.Collection();
@@ -181,7 +189,7 @@ function startUpInitForGuild(row, server){
 	let guild = bot.client.guilds.get(row.serverid);
 	server = {
 		prefix: bot.isBeta ? "??b" : row.prefix,
-		volume: row.volume/100,
+		volume: row.volume,
 		levelsEnabled: row.levelsEnabled,
 		levelsAnnounceInDM: row.levelsAnnounceInLevels,
 		levelUpMsg: row.levelUpMsg,
@@ -357,7 +365,7 @@ bot.client.on('error', error => {
 	// 	stream.end();
 	// 	process.exit();
 	// });
-	console.log("Error: " + new Date());
+	console.log("Error: " + new Date() + " -> " + error);
 });
 
 bot.client.on('disconnect', error => {
@@ -383,6 +391,43 @@ bot.checkRoleExists = async function(type, v, g){
 		return g.roles.exists('name', v);
 	}
 }
+
+bot.remainingTime = function(message){
+	let server = bot.servers[message.guild.id];
+	let totalTimeLeft = 0;
+
+	//Get time left before adding new songs
+	for(var i = 0; i < server.queue.length; i++){
+		if(server.queue[i].stream) return -1;
+		totalTimeLeft += server.queue[i].time;
+	}
+
+	if(server.player && server.player.playing){
+		totalTimeLeft -= (Date.now() - server.player.timestamp);
+	}
+	return totalTimeLeft;
+}
+
+bot.gracefulShutdown = function() {
+	for(x in bot.servers){
+		if(bot.servers[x].player){
+			try{
+				if(bot.servers[x].queue){
+					bot.servers[x].queue[0].channel.send("Dragonite shutting down.");
+				}
+			} catch (err){
+				console.log(err);
+			}
+			bot.manager.leave(x);
+		}
+	}
+
+	console.log("Graceful Shutdown complete");
+	process.exit();
+}
+process.on('SIGTERM', bot.gracefulShutdown);
+process.on('SIGINT', bot.gracefulShutdown);
+
 
 module.exports = { bot : bot,
 				   levels : levels };
