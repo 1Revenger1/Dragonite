@@ -33,7 +33,7 @@ exports.neededEXP = async function(totalEXP, expForm){
 exports.calcMult = function(lvl, value){
     //2.5% increase per level
     var mult = lvl * 0.025;
-    return Math.floor(value + (value * mult));
+    return (value + (value * mult));
 }
 
 //Ran whenever a member is not in the database
@@ -41,9 +41,9 @@ exports.newMember = function(member, bot){
     bot.fightDB.run(`INSERT INTO ServerID` + member.guild.id + ` VALUES(${member.id}, 0, 0, 0, 0, 0, 0)`);
     return { EXP: 0,
         level: 0,
-        hp: 0,
-        speed: 0,
-        damage: 0,
-        expm: 0,
+        hp: 500,
+        speed: 1,
+        damage: 1,
+        expm: 1,
         powerup: 1 };
 }

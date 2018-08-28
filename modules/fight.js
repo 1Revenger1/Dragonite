@@ -96,9 +96,9 @@ module.exports = {
                 member: message.member,
                 level: await levelUtil.calcLevel(sqlDataPer1.EXP),
                 exp: parseFloat(sqlDataPer1.EXP),
-                hp: levelUtil.calcMult(parseFloat(sqlDataPer1.HP), 500),
-                speed: levelUtil.calcMult(parseFloat(sqlDataPer1.SPEED), 100),
-                damage: levelUtil.calcMult(parseFloat(sqlDataPer1.DAMAGE), 100),
+                hp: Math.floor(levelUtil.calcMult(parseFloat(sqlDataPer1.HP), 500)),
+                speed: levelUtil.calcMult(parseFloat(sqlDataPer1.SPEED), 1),
+                damage: levelUtil.calcMult(parseFloat(sqlDataPer1.DAMAGE), 1),
                 expm: levelUtil.calcMult(parseFloat(sqlDataPer1.EXPM), 1),
                 powerup: 1
             };
@@ -107,9 +107,9 @@ module.exports = {
                 member: message.mentions.members.first(),
                 level: await levelUtil.calcLevel(sqlDataPer2.EXP),
                 exp: parseFloat(sqlDataPer2.EXP),
-                hp: levelUtil.calcMult(parseFloat(sqlDataPer2.HP), 500),
-                speed: levelUtil.calcMult(parseFloat(sqlDataPer2.SPEED), 100),
-                damage: levelUtil.calcMult(parseFloat(sqlDataPer2.DAMAGE), 100),
+                hp: Math.floor(levelUtil.calcMult(parseFloat(sqlDataPer2.HP), 500)),
+                speed: levelUtil.calcMult(parseFloat(sqlDataPer2.SPEED), 1),
+                damage: levelUtil.calcMult(parseFloat(sqlDataPer2.DAMAGE), 1),
                 expm: levelUtil.calcMult(parseFloat(sqlDataPer2.EXPM), 1),
                 powerup: 1
             }
@@ -124,12 +124,12 @@ module.exports = {
             
             message.channel.send(`__**${personOne.member.displayName}** [lvl: ${personOne.level} ] vs **${personTwo.member.displayName}** [lvl: ${personTwo.level} ]__`);
 
-            if(personTwo.member.id == '139548522377641984'){
+ /*           if(personTwo.member.id == '139548522377641984'){
                 message.channel.send(`${personTwo.member.displayName} shuts off Dragonite. ${personOne.member.displayName} waits... [-1000 damage] [0 hp left]`);
                 message.channel.send("There is no EXP to be found here...");
                 server.isFighting = false;
                 return;
-            }
+            }*/
 
             if(personTwo.member.user.bot){
                 message.channel.send(`${personOne.member.toString()} stares into the black abyss that are ${personTwo.member.toString()}'s eyes and freezes! [-1000 damage] [0 hp left]`);
@@ -145,10 +145,12 @@ module.exports = {
                 var damageValue = damage[Math.floor(Math.random() * damage.length)];
 
                 if(playerOneTurn){
+                    damageValue = Math.floor(damageValue * personOne.damage);
                     playerOneTurn = false;
                     personTwo.hp -= ((personTwo.hp - damageValue) < 0 ? personTwo.hp : damageValue);
                     messagesToDelete[messagesToDelete.length] = await message.channel.send("**" + personTwo.member.displayName + "**" + responses[damageType] + "**" + personOne.member.displayName + "**! [-" + damageValue + "] [" + personTwo.hp + " hp left]");
                 } else {
+                    damageValue = Math.floor(damageValue * personTwo.damage);
                     playerOneTurn = true;
                     personOne.hp -= ((personOne.hp - damageValue) < 0 ? personOne.hp : damageValue);
                     messagesToDelete[messagesToDelete.length] = await message.channel.send("**" + personOne.member.displayName + "**" + responses[damageType] + "**" + personTwo.member.displayName + "**! [-" + damageValue + "] [" + personOne.hp + " hp left]");

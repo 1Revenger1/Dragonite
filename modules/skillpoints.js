@@ -70,24 +70,24 @@ module.exports = {
                 switch(args[1].toUpperCase()){
                     case statEnum.HP:
                         statChanged = statEnum.HP;
-                        newTotal = sqlDataPer1.HP + num;
+                        newTotal = parseInt(sqlDataPer1.HP) + num;
                         break;
                     case statEnum.EXP:
                         statChanged = statEnum.EXP;
-                        newTotal = sqlDataPer1.EXPM + num;
+                        newTotal = parseInt(sqlDataPer1.EXPM) + num;
                         break;
                     case statEnum.Damage:
                         statChanged = statEnum.Damage;
-                        newTotal = sqlDataPer1.DAMAGE + num;
+                        newTotal = parseInt(sqlDataPer1.DAMAGE) + num;
                         break;
                     case statEnum.Speed:
                         statChanged = statEnum.Speed;
-                        newTotal = sqlDataPer1.SPEED + num;
+                        newTotal = parseInt(sqlDataPer1.SPEED) + num;
                         break;
                     default:
                         return message.channel.send("Not a valid stat!");
                 }
-
+                
                 //Check that you have enough skill pts
                 if(num > skillPts){
                     return message.channel.send("You don't have that many skill points to spend! You have `" + skillPts + "` points to spend.");
