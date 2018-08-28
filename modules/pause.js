@@ -11,12 +11,14 @@ module.exports = {
         var dragonite = `../Dragonite.js`;
         const server = bot.servers[message.guild.id];
         
-        if(server.dispatcher && !server.dispatcher.paused){
-            server.dispatcher.pause();
-            message.channel.send("Pausing playback");
-            return;
-        }
+        if(!server.player) return message.channel.send("The bot has no queued songs!");
 
-        message.channel.send("Already paused");
+        if(server.player.paused){
+            return message.channel.send("Already paused");
+        }
+        
+        server.player.pause(true);
+        message.channel.send("Pausing playback");
+
     }
 }

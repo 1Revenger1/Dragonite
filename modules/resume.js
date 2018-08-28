@@ -12,12 +12,13 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
         
-        if(server.dispatcher && server.dispatcher.paused){
-            server.dispatcher.resume();
-            message.channel.send("Resuming playback");
-            return;
-        }
+        if(!server.player) return message.channel.send("The bot has no queued songs!");
 
-        message.channel.send("Not currently paused");
+        if(!server.player.paused){
+            return message.channel.send("Already playing");
+        }
+        
+        server.player.pause(false);
+        message.channel.send("Resuming playback");
     }
 }

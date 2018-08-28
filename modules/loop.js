@@ -14,12 +14,14 @@ module.exports = {
 			return;
 		}
 	
-		if((parseInt(args[1]) <= 0) || (parseInt(args[1]) > 5)){
+		let loopNum = parseInt(args[1]);
+
+		if((loopNum <= 0) || (loopNum > 5) || !Number.isInteger(loopNum)){
 			message.channel.send('Looping arguement out of range. Please use a number between 1 and 5');
 			return;
 		}
 		
-		for(let i = 0; i < parseInt(args[1]); i++){
+		for(let i = 0; i < loopNum; i++){
 			if(server.queue[0].loop >= 5){
 				message.channel.send('Looping limit of 5 reached for this song.');
 				return;
@@ -28,5 +30,5 @@ module.exports = {
 			server.queue.unshift(server.queue[0]);
 		}
 		
-		message.channel.send('Song looped ' + args[1] + ' times');    }
+		message.channel.send('Song looped ' + loopNum + ' times');    }
 }
