@@ -9,12 +9,21 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
         
-        if(message.guild.voiceConnection){
-            await server.player.leave(message.guild.id);
-            server.Vconnection = null;
-            server.queue = null;
-            server.isPlaying = false;
-            //message.channel.send("Left the voice channel and emptied queue");
+        var clearedQueue = false;
+
+        if(server.player){
+            await server.player.disconnect();
+            await bot.manager.leave(message.guild.id);
+            if(server.queue){
+                server.queue = null;
+                clearedQueue = true;
+            }
+            server.player = null;
+            if(clearedQueue){
+                message.channel.send("Left the voice channel and emptied queue");
+            } else {
+                message.channel.send("Left the voice channel");
+            }
         } else {
             message.channel.send('I\'m not in a voice channel...');
         }
