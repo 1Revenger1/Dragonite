@@ -2,6 +2,7 @@ const request = require('request');
 const ytdl = require('ytdl-core');
 const Discord = require('discord.js');
 const prettyMs = require('pretty-ms');
+const fetch = require('snekfetch');
 
 module.exports = {
 	name: "search",
@@ -13,13 +14,13 @@ module.exports = {
         var dragonite = `../Dragonite.js`;
     
         const server = bot.servers[message.guild.id];
-		const ytkey = require(dragonite).tokens().ytKey();
+		const lavalinkKey = require(dragonite).tokens().lavalink();
 		
 		if(!dontDisplay){
 			dontDisplay = false;
 		}
 
-		let searchTerm = '';
+		let searchTerm = 'ytsearch:';
 		let isDisplay = (!dontDisplay);
 		let startValue = 1;
 
@@ -37,127 +38,90 @@ module.exports = {
 
 		let searchMessage = await message.channel.send("Currently searching... Please wait for a few seconds.");
 		
-		request('https://www.googleapis.com/youtube/v3/search?part=id&type=video&q=' + encodeURIComponent(searchTerm) + '&key=' + ytkey, async (error, response, body) => {
-			var results = JSON.parse(body);
-			if(error){
-				console.log(error); 
-				message.channel.send('There was an error');
+		let res = await fetch.get(`http://10.0.0.67:30000/loadtracks`)
+			.query({ identifier: searchTerm})
+			.set("Authorization", lavalinkKey)
+			.catch(err => {
+				return message.channel.send("Error occured: " + err);
+			});
+		
+		if (!res) return message.channel.send("Error!");
+		if (!res.body.tracks) return message.channel.send("No songs found");
+		
+
+
+		let resultNum = (res.body.tracks.length >= 5 ? 5 : res.body.tracks.length);
+		//Hey hey, uri for url...
+		let whichResultString = resultNum + " results. Please type the number for the result you want.\n\n";
+		
+		for(let i = 0; i < resultNum ; i++){
+			whichResultString += (i + 1) + ") " + res.body.tracks[i].info.title + " by " + res.body.tracks[i].info.author + "\n";
+		}
+
+		whichResultString += (resultNum + 1)  + ") Select to exit selection";
+		searchMessage.edit(whichResultString);
+
+		//Look for user response
+		message.collector = message.channel.createMessageCollector(m => m.member.id == message.member.id, { time: 60000 });
+
+		//Where we parse user response
+		message.collector.on('collect', async m => {
+			let userResponse;
+			try{
+				userResponse = parseInt(m.content) - 1;
+				if(!Number.isInteger(userResponse) || userResponse > resultNum || userResponse < 0) throw "Not a valid number";
+			} catch (err) {
+				return message.channel.send("Not a valid response. Make sure to respond with the number you want");
 			}
-			if('error' in results) {
-				message.channel.send('An error has occured...');
-				return;
-			} 
-			if(results.items.length === 0) {
-				message.channel.send('No results found. Please try using different terms');
-				return;
-			}			
 			
-			if(server.infoArray != null){
-				message.channel.send("Search already running - Please wait before running the command again");
-				return;
-			}
+			//If you have reached this point, a proper response has been made.
+			message.collector.stop("Selected");
 
-			server.infoArray = [];
-			var whichResultString = results.pageInfo.resultsPerPage + " results. Please type " + server.prefix + "<number of result> to select which one you want to use\n\n";
-			for(var i = 0; i < results.pageInfo.resultsPerPage; i++){
-				try{
-					let info = await ytdl.getInfo("www.youtube.com/watch?v=" + results.items[i].id.videoId);;
-					server.infoArray[i] = info;
+			if(userResponse == resultNum) return message.channel.send("Canceling search");
 
-					whichResultString += (i + 1) + ") " + info.title + " by " + info.author.name + "\n";
-				} catch(err){
-					server.infoArray[i] = null;
-					whichResultString += (i + 1) + ") Error - Do not select";
-				}
-			}
-			whichResultString += (results.pageInfo.resultsPerPage + 1) + ") Select to exit";
-			searchMessage.edit(whichResultString);
+			let songRes = res.body.tracks[userResponse];
+            let song = {
+                url: songRes.info.uri,
+                track: songRes.track,
+                title: songRes.info.title,
+                author: songRes.info.author,
+                channel: message.channel,
+                time: songRes.info.length,
+                stream: songRes.info.isStream
+            }
 
-			server.collector = message.channel.createMessageCollector(m => m.member.id == message.member.id, { time: 60000 });
+			if(isDisplay) return createEmbed(song, message);
 
-			server.collector.on('collect', async m => {
-				const server = require(`../Dragonite.js`).bot.servers[message.guild.id];
-				if(m.content.substring(0, server.prefix.length) == server.prefix || 
-				   m.content.substring(0, m.guild.me.toString() == m.guild.me.toString())){
+			server.queue.push(song);
 
-					var mText = m.content.replace(server.prefix, "");
-					mText = mText.replace(m.guild.me.toString(), "");
+			let totalTimeLeft = bot.remainingTime(message);
+			let timeString = totalTimeLeft == -1 ? "Unknown - Stream in queue" : prettyMs(totalTimeLeft, {secDecimalDigits: 0});
 
-					try{
-						var number = Number.parseInt(mText) - 1;
-						if(number == 5){
-							server.collector.stop('Selected');
-							message.channel.send("Selection stopped");
-							return;
-						}
-
-						if(server.infoArray[number] && server.infoArray[number] != null){
-
-							var info = server.infoArray[number];
-							server.collector.stop('Selected');
-
-							if(isDisplay){
-						
-								try {
-									const newt = info.thumbnail_url.replace("default", "maxresdefault");
-									await request(newt, async(error, response, body) => {
-										info.thumbnail = error != null ? info.thumbnail_url.replace("default", "hqdefault") : newt;
-										createEmbed(info, results.items[number].id.videoID, message);
-									});
-								} catch(e) {
-									info.thumbnail = info.thumbnail_url.replace("default", "hqdefault");
-									createEmbed(info, results.items[number].id.videoID, message);
-								}
-								
-							} else {
-								var totalTimeLeft = 0;
-								for(var i = 0; i < server.queue.length; i++){
-									totalTimeLeft += server.queue[i].time;
-								}
-								if(server.dispatcher){
-									totalTimeLeft -= server.dispatcher.totalStreamTime;
-								}
-								server.queue.push(song = {
-									url: "https://www.youtube.com/watch?v=" + results.items[number].id.videoId,
-										title: info.title,
-										author: info.author.name,
-										channel: message.channel,
-										time: info.length_seconds * 1000
-									});
-								message.channel.send('Added ' + info.title + ' by ' + info.author.user + ' to the queue! Will be played in `' + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + '`');
-								bot.commands.get("musicplay").run(bot, message, args, true);
-							}	
-							
-						} else {
-							throw new Error('Not a valid result');
-						}
-					} catch(err){
-						message.channel.send(err.message);
-					}
-				}
-			});
-
-			server.collector.on('end', (collected, reason) => {
-				bot.servers[message.guild.id].infoArray = null;
-				if(reason != 'Selected'){
-					message.channel.send("Search selection timed out");
-				}
-			});
-
+            message.channel.send(song.title + ' by ' + song.author + ' added to queue. Will be played in `' + timeString + '`');
+			bot.commands.get("musicplay").run(bot, message, args, true);
 		});
-    			
+
+		message.collector.on('end', (collected, reason) => {
+			if(reason != 'Selected'){
+				message.channel.send("Search selection timed out");
+			}
+		});		
     }
 }
 
-function createEmbed(info, videoID, message){
+function createEmbed(song, message){
 	var searchEmbed = new Discord.MessageEmbed()
 		.setColor('#E81F2F')
-		.setTitle(info.title)
-		.setImage(info.thumbnail)
+		.setTitle(song.title)
 		.setAuthor('Search result')
-		.setURL("https://www.youtube.com/watch?v=" + videoID)
-		.addField('Author', info.author.name)
-		.addField('Length', prettyMs(info.length_seconds * 1000));		
+		.setURL(song.url)
+		.addField('Author', song.author);
+
+		if(!song.stream){
+			searchEmbed.addField('Length', prettyMs(song.time, {secDecimalDigits: 0}));
+		} else {
+			searchEmbed.addField('Length', "Unknown - This is a stream");	
+		}
 	message.channel.send({embed : searchEmbed});
 }
 

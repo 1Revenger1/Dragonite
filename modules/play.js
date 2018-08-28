@@ -8,8 +8,8 @@ const lavalinkKey = require(`../Dragonite.js`).tokens().lavalink();
 module.exports = {
     name: "play",
     aliases: [],    
-    helpDesc: "Play a song or playlist from youtube.",
-    helpTitle: "Play <youtube link/search terms>",
+    helpDesc: "Play a song or playlist from youtube or other sites.",
+    helpTitle: "Play <video link/search terms>",
     cat: "music",
     run: async (bot, message, args) => {
         var dragonite = `../Dragonite.js`;
@@ -31,12 +31,7 @@ module.exports = {
             return;
         }
 
-        if(args[1].indexOf('youtube') < 0 && args[1].indexOf('youtu.be') < 0 && (args[1].indexOf('www') > -1 || args[1].indexOf('http') > -1)){
-            message.channel.send("Invalid link");
-            return;
-        }
-
-        if(args[1] && (args[1].indexOf('youtube') < 0) && (args[1].indexOf('youtu.be') < 0)){
+        if(args[1] && (args[1].indexOf('http') < 0) && (args[1].indexOf('youtu.be') < 0)){
             await require(`./search.js`).run(bot, message, args, true)
             return;
         }
@@ -55,24 +50,16 @@ module.exports = {
                     return message.channel.send("Error occured: " + err);
                 });
         if (!res) return message.channel.send("Error!");
-        //if (!res.body.length) return message.channel.send("No songs found");
+        if (!res.body.tracks) return message.channel.send("No songs found");
         
         let newCounter = 0;
-        let totalTimeLeft;
-
-        //Get time left before adding new songs
-        for(var i = 0; i < server.queue.length; i++){
-            totalTimeLeft += server.queue[i].time;
-        }
-
-        if(server.player){
-            totalTimeLeft -= (Date().timestamp - server.player.timestamp);
-        }
+        let totalTimeLeft = bot.remainingTime(message);
 
         for(results in res.body.tracks){
             let songRes = res.body.tracks[results];
             //console.log(JSON.stringify(songRes));
             let song = {
+                url: args[1],
                 track: songRes.track,
                 title: songRes.info.title,
                 author: songRes.info.author,
@@ -86,13 +73,15 @@ module.exports = {
             //console.log(JSON.stringify(song));
         }
 
+        let timeString = totalTimeLeft == -1 ? "Unknown - Stream in queue" : prettyMs(totalTimeLeft, {secDecimalDigits: 0});
+
         if(newCounter == 1){
             let song = server.queue[server.queue.length - 1];
-            message.channel.send(song.title + ' by ' + song.author + ' added to queue. Will be played in `' + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + '`');
+            message.channel.send(song.title + ' by ' + song.author + ' added to queue. Will be played in `' + timeString + '`');
         } else {
-            message.channel.send("Added `" + newCounter + "` new songs to the queue! First song from playlist will be played in `" + prettyMs(totalTimeLeft, {secDecimalDigits: 0}) + "`");
+            message.channel.send("Added `" + newCounter + "` new songs to the queue! First song from playlist will be played in `" + timeString + "`");
         }
-        
+
         bot.commands.get("musicplay").run(bot, message, args, true);
 
 

@@ -10,7 +10,7 @@ module.exports = {
         const server = bot.servers[message.guild.id];
         
         if(!args[1]){
-			message.channel.send("Current volume: " + server.volume * 100
+			message.channel.send("Current volume: " + server.volume
 				+ "\nUse " + server.prefix + "volume <integer from 0-100> to change the volume");
 			return;
 		}
@@ -26,44 +26,21 @@ module.exports = {
 		}
 		
 		bot.db.run('UPDATE servers SET volume=' + args[1] + ' WHERE serverid=' + message.guild.id);
-		server.volume = args[1]/100;
+		server.volume = args[1];
 		
 		message.channel.send("Volume set to " + args[1]);
-		if(!server.dispatcher){
+
+		//Doesn't make sense to set the volume of a non existant player
+		if(!server.player){
 			return;
 		}
 
 		try{
-			clearInterval(server.volumeInterval);
-
-			if(server.dispatcher.volume > server.volume){
-				volumeDown(server);
-			} else {
-				volumeUp(server);
-			}
+			//Automatically does volume ramp up and down, no need for the old code.
+			server.player.volume(server.volume);
 		}catch(err){
 			console.log(err);
 		}
 
     }
-}
-
-function volumeUp(server){
-	server.volumeCounter = server.dispatcher.volume;
-	server.volumeInterval = setInterval(function(){
-		server.dispatcher.setVolume(server.volumeCounter += 0.01);
-		if(server.volumeCounter >= server.volume){
-			clearInterval(server.volumeInterval);
-		}
-	}, 60);
-}
-
-function volumeDown(server){
-	server.volumeCounter = server.dispatcher.volume;
-	server.volumeInterval = setInterval(function(){
-		server.dispatcher.setVolume(server.volumeCounter -= 0.01);
-		if(server.volumeCounter <= server.volume){
-			clearInterval(server.volumeInterval);
-		}
-	}, 60);
 }
