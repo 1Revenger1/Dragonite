@@ -409,7 +409,9 @@ bot.remainingTime = function(message){
 
 bot.gracefulShutdown = function() {
 	for(x in bot.servers){
+		console.log("Server!");
 		if(bot.servers[x].player){
+			console.log("Player!");
 			try{
 				if(bot.servers[x].queue){
 					bot.servers[x].queue[0].channel.send("Dragonite shutting down.");
