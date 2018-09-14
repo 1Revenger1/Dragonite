@@ -364,7 +364,7 @@ bot.client.on('error', error => {
 	// 	stream.end();
 	// 	process.exit();
 	// });
-	console.log("Error: " + new Date() + " -> " + error);
+	console.log("Error: " + new Date() + " -> " + error.message + "\n" + error.stack);
 });
 
 bot.client.on('disconnect', error => {
