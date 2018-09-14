@@ -148,7 +148,7 @@ bot.client.on('ready', () => {
 				const json = fs.readFileSync("./Restart.json");
 				let restart = JSON.parse(json);
 				if (restart != "") {
-				  bot.client.channels.get(restart).send(`Dragonite restarted!\nLoaded data for ` + count + ` guilds\nCreated data for ${countAdditional} additional guilds\nLoaded ` + files.length + ` commands!`);
+				  bot.client.channels.get(restart).send(`Dragonite restarted!\nLoaded data for ${count} guilds\nCreated data for ${countAdditional} additional guilds\nLoaded ${files.length} commands!`);
 				  restart = "";
 				  fs.writeFileSync("./Restart.json", JSON.stringify(restart, null, 3));
 				}

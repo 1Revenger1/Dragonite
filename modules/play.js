@@ -64,6 +64,7 @@ module.exports = {
                 title: songRes.info.title,
                 author: songRes.info.author,
                 channel: message.channel,
+                member: message.member,
                 time: songRes.info.length,
                 stream: songRes.info.isStream
             }

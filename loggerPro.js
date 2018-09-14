@@ -398,7 +398,7 @@ exports.run = (bot) => {
                 .setDescription("Channel id: " + oldChannel.id)
                 .setTimestamp(new Date());
                 
-            if(oldChannel.name != newChannel){
+            if(oldChannel.name != newChannel.name){
                 messageEmbed.addField("Channel name changed", "Old channel name: " + oldChannel.name  + " New channel id: " + newChannel.name + "\nChannel id: " + oldChannel.id);
             }
             

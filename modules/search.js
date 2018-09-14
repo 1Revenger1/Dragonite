@@ -85,7 +85,8 @@ module.exports = {
                 url: songRes.info.uri,
                 track: songRes.track,
                 title: songRes.info.title,
-                author: songRes.info.author,
+				author: songRes.info.author,
+				member: message.member,
                 channel: message.channel,
                 time: songRes.info.length,
                 stream: songRes.info.isStream
