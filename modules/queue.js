@@ -32,11 +32,15 @@ module.exports = {
         var queueS = "__Page **" + (page + 1) + "** of **" + pages + "**__\n";
 
         var timeLeft = totalTimeLeft == -1 ? "Unknown - Stream in queue" : prettyMs(totalTimeLeft, {secDecimalDigits: 0});
-
-        queueS += "Now playing " + server.queue[0].title + " by " + server.queue[0].author + "\n";
+        
+        var timeForCurrentSong = server.queue[0].stream ? "Live" : prettyMs(Date.now() - server.player.timestamp, {secDecimalDigits: 0});
+        
+        queueS += "Now playing " + server.queue[0].title + " by " + server.queue[0].author + " `" + timeForCurrentSong + "`\n";
         queueS += "Time left: `" + timeLeft + "` Songs left: `" + (server.queue.length - 1) + "`\n\n";
         for(var i = 1; (10 * page + i) < server.queue.length && i <= 10; i++){
-            queueS += "`[" + (i + 10 * page) + "]` " + server.queue[i + 10 * page].title + " by " + server.queue[i + 10 * page].author + " \n";
+            var timeString = server.queue[i + 10 * page].stream ? "Live" : prettyMs(server.queue[i + 10 * page].time, {secDecimalDigits: 0});
+            
+            queueS += "`[" + (i + 10 * page) + "]` " + server.queue[i + 10 * page].title + " by " + server.queue[i + 10 * page].author + " `" + timeString + "`\n";
         }
 
         queueS += "\nUse the Queue command with a page number to see other pages";

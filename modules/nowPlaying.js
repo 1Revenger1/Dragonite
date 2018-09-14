@@ -31,7 +31,7 @@ module.exports = {
 				}
 
 			} else {
-				progressString += "Unknown - Watching stream";
+				progressString += "Live";
 			}
 
 			progressString += ' |';

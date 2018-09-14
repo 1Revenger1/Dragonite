@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 module.exports = {
     name: "options",
     aliases: [],    
-    helpDesc: "Options for how Dragonite behaves in each guild",
+    helpDesc: "Options for this guild's Dragonite prefix, among other options",
     helpTitle: "Options",
     cat: "admin",
     permLevel: require(`../Dragonite.js`).levels.level_2,
@@ -16,18 +16,24 @@ module.exports = {
             var rolesOn = server.selfAssignOn;
             var musicChannel = server.defaultMusic;
     
-            var optionString = "***__Dragonite Options__***\n\n";		
+            var optionString = "***__Dragonite Options__***\n\n";
+            var prefixString = "**__Prefix__**\n";
             var roleString = "**__Role__**\n";
             var musicString = "**__Music__**\n";
             var loggingString = "**__Logging__**\n";
-            var endString = "You can change options in italics. For more details, do `" + server.prefix + "options <name of header>`";
+            var endString = "For more details, use the commands listed under each section";
 
+            prefixString += "Prefix: " + server.prefix + "\n" +
+                            "`" + server.prefix + "options prefix`\n";
+            
             roleString += "Enabled: " + trueCheck(rolesOn) +
-                          "Has \"Manage Role\": " + (message.guild.me.hasPermission("MANAGE_ROLES") == true ? ":white_check_mark:" : ":x:") + "\n";
-    
+                          "Has \"Manage Role\": " + (message.guild.me.hasPermission("MANAGE_ROLES") == true ? ":white_check_mark:" : ":x:") + "\n" +
+                          "`" + server.prefix + "options role`\n";
+                            
             musicString += "Music Channel set: " + (musicChannel != undefined ? ":white_check_mark:" : ":x:") + "\n" + 
-                           "Music Channel: " + (musicChannel != undefined ? musicChannel.name : "Not set") + "\n";
-
+                           "Music Channel: " + (musicChannel != undefined ? musicChannel.name : "Not set") + "\n" +
+                           "`" + server.prefix + "options music`\n"
+                            
             loggingString += "Logging Dump Channel: " + (server.logChannel != undefined ? server.logChannel.name : "Not set") + "\n" + 
                             "Join Logs Dump Channel: " + (server.userLogChannel != undefined ? server.userLogChannel.name : "Not set") + "\n" + 
                             "Enabled: " + trueCheck(server.loggingEnabled) +
@@ -36,11 +42,10 @@ module.exports = {
                             "Join Logs: " + trueCheck(server.loggingJoin) + 
                             "User Logs: " + trueCheck(server.loggingUser) + 
                             "Message Logs: " + trueCheck(server.loggingMessage) + 
-                            "Role Logs: " + trueCheck(server.loggingRole) + "\n";
+                            "Role Logs: " + trueCheck(server.loggingRole) + 
+                            "`" + server.prefix + "options logging`\n";
     
-            optionString += roleString + "\n" + musicString + "\n" + loggingString + "\n" + endString;
-    
-
+            optionString += prefixString + "\n" + roleString + "\n" + musicString + "\n" + loggingString + "\n" + endString;
     
             message.channel.send(optionString);
                 
@@ -51,13 +56,32 @@ module.exports = {
         }
         
         switch(args[1].toLowerCase()){
+            case "prefix":
+                if(args[2]){
+                    if(args[3]){
+                        return message.channel.send("No spaces allowed in the prefix!");
+                    }
+                    
+                    if(args[2].length > 5){
+                        return message.channel.send("Prefix is too long. Please limit it to five characters");
+                    }
+                    
+                    server.prefix = args[2];
+                    bot.db.run("UPDATE servers SET prefix=\'" + args[2] + "\' WHERE serverid = " + message.guild.id);
+                    message.channel.send("Dragonite prefix changed to `" + server.prefix + "` for this guild");
+                } else {
+                    message.channel.send("Allows you to change the prefix that precedes all commands. Use `" + server.prefix + "options prefix <prefix>` to change. It is limited to 5 characters with no spaces, and mentions are not allowed." +
+                    "Remember that Dragonite also responds to being mentioned before every command.");
+                }                
+                break;
             case "role":
                 if(args[2] == "true" || args[2] == "false"){
                     server.selfAssignOn = args[2];
                     bot.db.run("UPDATE servers SET selfAssignOn=\'" + args[2] + "\' WHERE serverid = " + message.guild.id);
                     message.channel.send("Roles enabled set to " + args[2]);
                 } else{
-                    message.channel.send("Allows you to enable/disable Dragonite's role system. Use `" + server.prefix + "options role true/false` to set");
+                    message.channel.send("Allows you to enable/disable Dragonite's role system. Use `" + server.prefix + "options role true/false` to set." +
+                    "To add or remove roles to the list Dragonite can give, use `" + server.prefix + "addrole/removerole`.");
                 }
                 break;
             case "music":
@@ -74,7 +98,7 @@ module.exports = {
                         message.channel.send('That is not a valid voice channel');
                     }
                 } else {
-                    message.channel.send("Allows you to force Dragonite to play in only one voice channel. Use `" + server.prefix + "options music (Voice Channel Name/off)` to set");
+                    message.channel.send("Allows you to force Dragonite to play in only one voice channel. Use `" + server.prefix + "options music (Voice Channel Name/off)` to set.");
                 }
                 break;
             case "logging":

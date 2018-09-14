@@ -12,6 +12,11 @@ module.exports = {
             message.channel.send("Self Assignable Roles are not enabled on this server! Please ask an administrator to turn it on using " + server.prefix + "options");
             return;
         }
+        
+        if(!server.roles){
+            server.roles = [];
+        }
+        
         if(!args[1]){
             var msg = "Here are the current roles that are assignable:";
             if(!server.roles[0]) {

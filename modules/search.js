@@ -64,6 +64,7 @@ module.exports = {
 		//Look for user response
 		message.collector = message.channel.createMessageCollector(m => m.member.id == message.member.id, { time: 60000 });
 
+        
 		//Where we parse user response
 		message.collector.on('collect', async m => {
 			let userResponse;
@@ -105,7 +106,7 @@ module.exports = {
 			if(reason != 'Selected'){
 				message.channel.send("Search selection timed out");
 			}
-		});		
+		});
     }
 }
 

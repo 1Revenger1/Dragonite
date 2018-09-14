@@ -61,6 +61,7 @@ module.exports = {
             
             server.queue.shift();
             if(server.queue[0]){
+                bot.sleep(1000);
                 bot.commands.get("musicplay").run(bot, message, args, true);
             } else {
                 server.timeout = setTimeout(emptyQueueHandeler, 90000, server, message); //(90000ms) 1 and a half minute timeout before leaving if nothing else is queued.

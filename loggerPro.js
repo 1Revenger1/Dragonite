@@ -7,6 +7,14 @@ exports.run = (bot) => {
 	this.bot = bot;
 
 	try{
+    /*  join logs - blue - 4760ff
+        delete logs - red - ff4747
+        ban - magenta - f347ff
+        channel - green - 3aed2d
+        emojis - yellow - e0ed2d
+        roles - 00ffff - cyan
+    
+    */
 		//Color for Join Logs //#4760ff
 		bot.client.on("guildMemberAdd", member => guildMemberAdd(member));
 		bot.client.on("guildMemberRemove", member => guildMemberRemove(member));
@@ -23,13 +31,13 @@ exports.run = (bot) => {
 		//Logging users getting roles or changed nicknames
 		bot.client.on("guildMemberUpdate", (oldMember, newMember) => guildMemberUpdate(oldMember, newMember));
 		
-/*		//Not done yet
+		//Not done yet
 		//Update to channels in general
 		bot.client.on("channelCreate", channel => channelCreate(channel));
 		bot.client.on("channeleDelete", channel => channelDelete(channel));
 		bot.client.on("channelPinsUpdate", (channel, time) => channelEdit(channel, time));
 		bot.client.on("channelUpdate", (oldChannel, newChannel) => channelUpdate(oldChannel, newChannel));
-		
+/*		
 		//Emojis created/removed/edited
 		bot.client.on("emojiCreate", emoji => emojiCreate(emoji));
 		bot.client.on("emojiDelete", emoji => emojiDelete(emoji));
@@ -45,7 +53,12 @@ exports.run = (bot) => {
 	}
 		
 	function isDM(message){
-		return message.channel.type == 'dm';
+        try{
+            return message.channel.type == 'dm';
+        } catch (err) {
+            console.log(err);
+            console.log(message);
+        }
 	}
 
 	/*
@@ -114,12 +127,14 @@ exports.run = (bot) => {
 	 */
 	async function messageDelete(message){
 		try{
-			if(isDM(message)) return;
+			//if(isDM(message)) return;
 			let server = bot.servers[message.guild.id];
 			if(server.loggingEnabled != "true" || server.loggingMessage != "true"){
 				return;
 			}
-
+            
+            
+            if(message.channel.id == server.logChannel.id) return;
 
 			var messageEmbed = new Discord.MessageEmbed()
 				.setColor("#ff4747")
@@ -133,7 +148,7 @@ exports.run = (bot) => {
 				.setFooter(`User ID: ${message.member.id} | Username: ${message.member.user.username}`);
 			}
 
-
+            messageEmbed.addField('Channel', message.channel.name);
 			server.logChannel.send({embed: messageEmbed});
 		} catch(err){
 			console.log(err);
@@ -145,7 +160,7 @@ exports.run = (bot) => {
 	 */
 	async function messageDeleteBulk(message){
 		try{
-			if(isDM(message)) return;
+			if(isDM(message.first())) return;
 			let server = bot.servers[message.first().guild.id];
 			if(server.loggingEnabled != "true" || server.loggingMessage != "true"){
 				return;
@@ -157,6 +172,7 @@ exports.run = (bot) => {
 				.setDescription(`${message.size} messages deleted in ${message.first().channel}`)
 				.setTimestamp(new Date());
 
+            messageEmbed.addField('Channel', message.first().channel.name);
 			server.logChannel.send({embed: messageEmbed});
 		} catch(err){
 			console.log(err);
@@ -190,6 +206,7 @@ exports.run = (bot) => {
 				.setFooter(`User ID: ${oldMessage.member.id} | Username: ${oldMessage.member.user.username}`);
 
 
+            messageEmbed.addField('Channel', oldMessage.channel.name);
 			server.logChannel.send({embed: messageEmbed});
 		} catch(err){
 			console.log(err);
@@ -310,5 +327,89 @@ exports.run = (bot) => {
 			console.log(err);
 		}
 	}
+    
+    async function channelCreate(channel){
+        try{
+            let server = bot.servers[channel.guild.id];
+            if(server.loggingEnabled != "true" || server.loggingChannel != "true"){
+                return;
+            }
+                
+            var messageEmbed = new Discord.MessageEmbed()
+                .setColor("#3aed2d")
+                .setTitle("New channel created!")
+                .setDescription("Name: `" + channel.name  + "` Id: " + channel.id)
+                .setTimestamp(new Date())
+
+            server.logChannel.send({embed: messageEmbed});
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    
+    async function channelDelete(channel){
+        try{
+            let server = bot.servers[channel.guild.id];
+            if(server.loggingEnabled != "true" || server.loggingChannel != "true"){
+                return;
+            }
+                
+            var messageEmbed = new Discord.MessageEmbed()
+                .setColor("#3aed2d")
+                .setTitle("A channel was deleted!")
+                .setDescription("Name: `" + channel.name  + "` Id: " + channel.id)
+                .setTimestamp(new Date())
+
+            server.logChannel.send({embed: messageEmbed});
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    
+    async function channelPinsUpdate(channel, time){
+        try{
+            let server = bot.servers[channel.guild.id];
+            if(server.loggingEnabled != "true" || server.loggingChannel != "true"){
+                return;
+            }
+                
+            var messageEmbed = new Discord.MessageEmbed()
+                .setColor("#3aed2d")
+                .setTitle("Pins edited")
+                .setDescription("Channel name: `" + channel.name  + "` Channel id: " + channel.id)
+                .setTimestamp(new Date())
+
+            server.logChannel.send({embed: messageEmbed});
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    
+    async function channelUpdate(oldChannel, newChannel){
+        try{
+            let server = bot.servers[oldChannel.guild.id];
+            if(server.loggingEnabled != "true" || server.loggingChannel != "true"){
+                return;
+            }
+
+            var messageEmbed = new Discord.MessageEmbed()
+                .setColor("#3aed2d")
+                .setTitle("Channel update")
+                .setDescription("Channel id: " + oldChannel.id)
+                .setTimestamp(new Date());
+                
+            if(oldChannel.name != newChannel){
+                messageEmbed.addField("Channel name changed", "Old channel name: " + oldChannel.name  + " New channel id: " + newChannel.name + "\nChannel id: " + oldChannel.id);
+            }
+            
+            if(oldChannel.topic && oldChannel.topic != newChannel.topic){
+                messageEmbed.addField("Channel topic changed", "Old channel topic: " + oldChannel.topic + "\n\nNew channel topic: " + newChannel.topic);
+            }
+
+            server.logChannel.send({embed: messageEmbed});
+        } catch (err) {
+            console.log(err);
+        }
+    }
 	//User Welcome/Leave
 }

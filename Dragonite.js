@@ -20,7 +20,7 @@ const levels = {
 	level_3: "Level 3 : Owner"
 }
 
-bot.version = '0-v8.0.0';
+bot.version = '0-v8.2';
 bot.versionBeta = '.1';
 bot.checkLocation;
 bot.isBeta = false;
@@ -53,22 +53,16 @@ var isTakingCommands = false;
 
 var timer = 0;
 
+
 function changeGame() {
-	if(timer === 0){
-		bot.client.user.setActivity('with other sentient bots...what?');
-		timer = 1;
-		return;
-	}
-	if(timer === 1){
-		bot.client.user.setActivity('Use "@Dragonite help" for commands');
-		timer = 2;
-		return;
-	}
-	if(timer === 2){
-		bot.client.user.setActivity('I\'m in ' + Object.keys(bot.servers).length + ' guilds!');
-		timer = 0;
-		return;
-	}
+    var games = ["with other sentient bots...what?",
+             "Use '@Dragonite help' for commands",
+             ("I'm in " + Object.keys(bot.servers).length + " guilds!"),
+             "music for people!"]
+    timer++;
+    if(timer == games.length) timer = 0;
+    
+    bot.client.user.setActivity(games[timer]);
 }
 
 bot.db.serialize(function() {
@@ -238,7 +232,7 @@ function startUpInitForGuild(row, server){
 }
 
 bot.client.on('guildCreate', guild => {
-	bot.servers[row.serverid] = newGuild(guild);
+	bot.servers[guild.id] = newGuild(guild);
 });
 
 bot.client.on('guildDelete', guild => {
@@ -295,7 +289,7 @@ bot.client.on('message', async message => {
 		}
 
 		//Edge case so that users can mention dragonite to get the prefix
-		if(message.content.toLowerCase().indexOf(message.guild.me.toString()) !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1 && message.member.id != bot.client.user.id){
+		if(message.content.toLowerCase().indexOf(message.guild.me.toString()) !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1 && message.member.id != bot.client.user.id && message.content.toLowerCase().indexOf('options') == -1){
 			message.channel.send('Use `@' + message.guild.me.displayName + ' help` to see prefix and get help for commands');
 			return;
 		}
@@ -307,6 +301,11 @@ bot.client.on('message', async message => {
 
 		let args = message.content.split(" ");
 		
+        //Finally put in a check for if there is any content, lol
+        if(!message.content){
+            return;
+        }
+        
 		//Stop running if Dragonite isn't mentioned or the prefix isn't used
 		if(args[0].substring(0, server.prefix.length) != server.prefix && args[0] != message.guild.me.toString()){
 			return;
