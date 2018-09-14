@@ -58,7 +58,7 @@ module.exports = {
                 try{
                     if(message.member.roles.has(roleToGive.id)){
                         message.member.roles.remove(roleToGive, "The user requested to remove the role.");
-                        message.channel.send("Removing " + roletoGive.name + " from " + message.member.displayName);
+                        message.channel.send("Removing " + roleToGive.name + " from " + message.member.displayName);
                     } else {
                         message.member.roles.add(roleToGive , "The user requested the role");
                         message.channel.send("Giving " + roleToGive.name + " to " + message.member.displayName);
