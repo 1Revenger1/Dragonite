@@ -57,11 +57,12 @@ module.exports = {
             if(isRole == true){
                 try{
                     if(message.member.roles.has(roleToGive.id)){
-                        message.channel.send(message.member.displayName + " already has `" + roleToGive.name + "`");
-                        return;
+                        message.member.roles.remove(roleToGive, "The user requested to remove the role.");
+                        message.channel.send("Removing " + roletoGive.name + " from " + message.member.displayName);
+                    } else {
+                        message.member.roles.add(roleToGive , "The user requested the role");
+                        message.channel.send("Giving " + roleToGive.name + " to " + message.member.displayName);
                     }
-                    message.member.roles.add(roleToGive , "The user requested the role");
-                    message.channel.send("Giving " + roleToGive.name + " to " + message.member.displayName);
                 } catch(err) {
                     console.log(err);
                     message.channel.send("That didn't quite work...please try again!");

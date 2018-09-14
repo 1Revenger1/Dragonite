@@ -35,7 +35,7 @@ exports.run = (bot) => {
 		//Update to channels in general
 		bot.client.on("channelCreate", channel => channelCreate(channel));
 		bot.client.on("channeleDelete", channel => channelDelete(channel));
-		bot.client.on("channelPinsUpdate", (channel, time) => channelEdit(channel, time));
+		bot.client.on("channelPinsUpdate", (channel, time) => channelPinsUpdate(channel, time));
 		bot.client.on("channelUpdate", (oldChannel, newChannel) => channelUpdate(oldChannel, newChannel));
 /*		
 		//Emojis created/removed/edited

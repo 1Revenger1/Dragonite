@@ -20,7 +20,7 @@ const levels = {
 	level_3: "Level 3 : Owner"
 }
 
-bot.version = '0-v8.2';
+bot.version = '0-v8.3';
 bot.versionBeta = '.1';
 bot.checkLocation;
 bot.isBeta = false;
@@ -407,14 +407,15 @@ bot.remainingTime = function(message){
 	return totalTimeLeft;
 }
 
-bot.gracefulShutdown = function() {
+bot.gracefulShutdown = async function() {
 	for(x in bot.servers){
 		console.log("Server!");
 		if(bot.servers[x].player){
 			console.log("Player!");
 			try{
 				if(bot.servers[x].queue){
-					bot.servers[x].queue[0].channel.send("Dragonite shutting down.");
+					console.log("Queue!");
+					await bot.servers[x].queue[0].channel.send("Dragonite shutting down.");
 				}
 			} catch (err){
 				console.log(err);
