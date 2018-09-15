@@ -53,11 +53,11 @@ var isTakingCommands = false;
 
 var timer = 0;
 
-
 function changeGame() {
+	var serverNumber = bot.client.guilds.size;
     var games = ["with other sentient bots...what?",
              "Use '@Dragonite help' for commands",
-             ("I'm in " + Object.keys(bot.servers).length + " guilds!"),
+             (`I'm in ${serverNumber} guilds!`),
              "music for people!"]
     timer++;
     if(timer == games.length) timer = 0;
