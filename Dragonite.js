@@ -20,8 +20,8 @@ const levels = {
 	level_3: "Level 3 : Owner"
 }
 
-bot.version = '0-v8.3';
-bot.versionBeta = '.1';
+bot.version = '0-v8.4';
+bot.versionBeta = '.0';
 bot.checkLocation;
 bot.isBeta = false;
 bot.changeGameTimerOn = true;
