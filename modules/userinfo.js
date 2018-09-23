@@ -38,12 +38,12 @@ module.exports = {
 
         member.roles.forEach((value, key, map) => {
             roleCount++;
-            if(roleCount <= 20 && roleCount > 1) roleStr += value.toString() + " ";
+            if(roleCount <= 21 && roleCount > 1) roleStr += value.toString() + " ";
         });
 
-        if(roleCount > 20) roleStr += (roleCount - 20) + " more roles...";
+        if(roleCount > 21) roleStr += (roleCount - 21) + " more roles...";
 
-        embed.addField("Roles [ " + roleCount + " ]", roleStr);
+        embed.addField("Roles [ " + roleCount - 1 + " ]", roleStr);
         embed.addField("Icon URL", member.user.displayAvatarURL());
         embed.setColor(member.roles.color.hexColor);
 
