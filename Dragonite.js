@@ -409,12 +409,10 @@ bot.remainingTime = function(message){
 
 bot.gracefulShutdown = async function() {
 	for(x in bot.servers){
-		console.log("Server!");
 		if(bot.servers[x].player){
-			console.log("Player!");
 			try{
 				if(bot.servers[x].queue){
-					console.log("Queue!");
+					console.log("Graceful Shutdown: Shutdown sent in guild w/ ID " + x);
 					await bot.servers[x].queue[0].channel.send("Dragonite shutting down.");
 				}
 			} catch (err){

@@ -10,7 +10,7 @@ module.exports = {
         let voiceConnections = 0;
 
         for(server in bot.servers){
-            if(server.player) voiceConnections++;
+            if(bot.servers[server].player) voiceConnections++;
         }
 
         var infoEmbed = new Discord.MessageEmbed()
