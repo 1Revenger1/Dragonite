@@ -222,7 +222,8 @@ function startUpInitForGuild(row, server){
 		let roleIDs = row.roleIDs.split(" ");
 		for(var i = 0; i < roleIDs.length - 1; i++){
 			try{
-				server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
+				var role = bot.client.guilds.get(row.serverid).roles.get(roleIDs[i]);
+				if(role != undefined) server.roles[i] = bot.client.guilds.get(row.serverid).roles.find('id', roleIDs[i]);
 			} catch(err){
 				//Do nothing if role does not exist
 			}
