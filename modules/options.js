@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 module.exports = {
     name: "options",
-    aliases: [],    
+    aliases: ["settings"],    
     helpDesc: "Options for this guild's Dragonite prefix, among other options",
     helpTitle: "Options",
     cat: "admin",

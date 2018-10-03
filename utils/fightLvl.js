@@ -40,10 +40,10 @@ exports.calcMult = function(lvl, value){
 exports.newMember = function(member, bot){
     bot.fightDB.run(`INSERT INTO ServerID` + member.guild.id + ` VALUES(${member.id}, 0, 0, 0, 0, 0, 0)`);
     return { EXP: 0,
-        level: 0,
-        hp: 500,
-        speed: 1,
-        damage: 1,
-        expm: 1,
-        powerup: 1 };
+        level: "0",
+        HP: "0",
+        SPEED: "0",
+        DAMAGE: "0",
+        EXPM: "0",
+        powerup: "0" };
 }

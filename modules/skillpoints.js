@@ -4,7 +4,7 @@ var statEnum = {
     HP: "HP",
     Speed: "SPEED",
     Damage: "DAMAGE",
-    EXP: "EXP"
+    EXP: "EXP-Multiplier"
 }
 
 module.exports = {
@@ -21,7 +21,10 @@ module.exports = {
         var statChanged;
         var newTotal;
 
-        var person = message.mentions.members.first() ? message.mentions.members.first() : message.member;
+        
+        let person = message.member;
+        person = message.mentionEvent && (message.mentions.members.size > 1) ? message.mentions.members.array()[1] : person;
+        person = (!message.mentionEvent) && message.mentions.members.first() ? message.mentions.members.first() : person;
 
         bot.fightDB.get("SELECT * from ServerID" + message.guild.id + " WHERE userID=" + person.id, async function(err, row){
             if(err){
@@ -47,10 +50,12 @@ module.exports = {
             //Skillpoints left to spend
             skillPts = parseInt(sqlDataPer1.level) - (parseInt(sqlDataPer1.HP) + parseInt(sqlDataPer1.SPEED) + parseInt(sqlDataPer1.DAMAGE) + parseInt(sqlDataPer1.EXPM)) - 1;
 
-            if(!args[1] || person != message.member){
+            if(skillPts == undefined) skillPts = 0;
+            
+            if((!message.mentionEvent && !args[1]) || (message.mentionEvent && !args[2]) || person != message.member){
                 embed.setAuthor(person.displayName + "'s stats in " + message.guild.name , person.user.displayAvatarURL());
                 embed.setDescription("Level: " + sqlDataPer1.level + "\nEXP: (" + expForm.currentEXP + " / " + expForm.neededEXP + ")");
-                embed.addField("Stat Levels", `HP: ${(sqlDataPer1.HP)}\nSpeed: ${(sqlDataPer1.SPEED)}\nDamage: ${(sqlDataPer1.DAMAGE)}\nEXP Multiplier: ${(sqlDataPer1.EXPM)}`);
+                embed.addField("Stat Levels", `HP: ${(sqlDataPer1.HP)}\nSpeed: ${(sqlDataPer1.SPEED)}\nDamage: ${(sqlDataPer1.DAMAGE)}\nEXP-Multiplier: ${(sqlDataPer1.EXPM)}`);
                 embed.addField("Skill points to spend", skillPts + "\nSpend by doing " + server.prefix + "skillpoints <name> <num of points to spend>");
             } else {
                 embed.setAuthor(person.displayName + " Skill Point Confirmation", person.user.displayAvatarURL());;
@@ -97,15 +102,15 @@ module.exports = {
 
                 message.collector = message.channel.createMessageCollector(m => m.member.id == message.member.id, { time: 60000 });
                 message.collector.on('collect', m => handleAnswer(m));
-                message.collector.on('end', reason => handleEnd(reason));
+                message.collector.on('end', (collected, reason) => handleEnd(collected, reason));
             }
 
             message.channel.send({embed: embed});
 
         });
 
-        function handleEnd(reason){
-            if(reason != 'Answer'){
+        function handleEnd(collected, reason){
+            if(reason !== 'Answer'){
                 message.channel.send("No answer given before time-out. Please re-run the command.");
             }
         }

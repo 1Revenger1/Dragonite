@@ -20,7 +20,7 @@ const levels = {
 	level_3: "Level 3 : Owner"
 }
 
-bot.version = '0-v8.4';
+bot.version = '0-v8.5';
 bot.versionBeta = '.0';
 bot.checkLocation;
 bot.isBeta = false;
@@ -220,11 +220,18 @@ function startUpInitForGuild(row, server){
 	if(row.roleIDs){
 		server.roles = [];
 		let roleIDs = row.roleIDs.split(" ");
+        var errorCounter = 0;
 		for(var i = 0; i < roleIDs.length - 1; i++){
 			try{
 				var role = bot.client.guilds.get(row.serverid).roles.get(roleIDs[i]);
-				if(role != null) server.roles[i] = role;
+                console.log(role.name);
+				if(role == undefined) {
+                    errorCounter++;
+                } else {
+                    server.roles[i - errorCounter] = role;
+                }
 			} catch(err){
+                errorCounter++;
 				//Do nothing if role does not exist
 			}
 		}
@@ -320,6 +327,7 @@ bot.client.on('message', async message => {
 		try {
 			if(args[0] == message.guild.me.toString()){
 				args.shift();
+                message.mentionEvent = true;
 			}
 			//Get the command name itself
 			var commandArg = args[0].replace(server.prefix, "").toLowerCase();

@@ -16,7 +16,7 @@ module.exports = {
         message.channel.send('Pinging...').then((msg) =>{
             var ping2 = msg.createdTimestamp - ping1;
             try{
-                msg.edit('Pong! Message ping was ' + ping2 + ' ms. The Websocket ping was ' + bot.client.ping.toFixed(0) + ' ms.');
+                msg.edit('Pong! Response time was ' + ping2 + ' ms. The Websocket ping was ' + bot.client.ping.toFixed(0) + ' ms.');
             } catch(err) {
                 message.edit('Pinging... That didn\'t quite work.');
             }

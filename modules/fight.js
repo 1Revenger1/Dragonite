@@ -17,14 +17,18 @@ module.exports = {
             message.channel.send("How are you supposed to fight everyone here? That seems *really* difficult...");
             server.isFighting = false;
             return;
-        }
+        }        
         
-        if(message.mentions.users.size < 1){
+        let person = message.member;
+        person = message.mentionEvent && (message.mentions.members.size > 1) ? message.mentions.members.array()[1] : person;
+        person = (!message.mentionEvent) && message.mentions.members.first() ? message.mentions.members.first() : person;
+        
+        if((!message.mentionEvent && message.mentions.users.size < 1) || (message.mentionEvent && message.mentions.users.size < 2)){
             message.channel.send("Please mention a user");
             server.isFighting = false;
             return;
         }
-
+                
         server.isFighting = true;
 
         var sqlDataPer1 = null;
@@ -47,15 +51,18 @@ module.exports = {
                 } else {
                     sqlDataPer1 = row;
                 }
+                
+                
 
-                bot.fightDB.get("SELECT * from ServerID" + message.guild.id + " WHERE userID=" + message.mentions.members.first().id, function(err, row){
+
+                bot.fightDB.get("SELECT * from ServerID" + message.guild.id + " WHERE userID=" + person.id, function(err, row){
                     if(err){
                         console.log(err);
                         return;
                     }
     
                     if(row == undefined){
-                        sqlDataPer2 = levelUtil.newMember(message.mentions.members.first(), bot);
+                        sqlDataPer2 = levelUtil.newMember(person, bot);
                     } else {
                         sqlDataPer2 = row;
                     }
@@ -85,7 +92,7 @@ module.exports = {
             var damage = [ 25, 50, 75, 100, 125, 150, 200, 250]
             var messagesToDelete = [];
             
-            if(message.mentions.members.first().id == message.member.id){
+            if(person.id == message.member.id){
                 message.channel.send("Hold up - I'm stopping it right here. No fighing yourself");
                 server.isFighting = false;
                 return;
@@ -104,7 +111,7 @@ module.exports = {
             };
 
             var personTwo = {
-                member: message.mentions.members.first(),
+                member: person,
                 level: await levelUtil.calcLevel(sqlDataPer2.EXP),
                 exp: parseFloat(sqlDataPer2.EXP),
                 hp: Math.floor(levelUtil.calcMult(parseFloat(sqlDataPer2.HP), 500)),
