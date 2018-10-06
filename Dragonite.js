@@ -20,7 +20,7 @@ const levels = {
 	level_3: "Level 3 : Owner"
 }
 
-bot.version = '0-v8.5';
+bot.version = '0-v8.6';
 bot.versionBeta = '.0';
 bot.checkLocation;
 bot.isBeta = false;
@@ -224,7 +224,6 @@ function startUpInitForGuild(row, server){
 		for(var i = 0; i < roleIDs.length - 1; i++){
 			try{
 				var role = bot.client.guilds.get(row.serverid).roles.get(roleIDs[i]);
-                console.log(role.name);
 				if(role == undefined) {
                     errorCounter++;
                 } else {
@@ -247,6 +246,8 @@ bot.client.on('guildDelete', guild => {
 	bot.db.run("DELETE FROM servers WHERE serverid=" + guild.id);
 	bot.servers[guild.id] = null;
 });
+
+let commandErrorCount = 0;
 
 bot.client.on('message', async message => {
     //Command Start
@@ -359,7 +360,11 @@ bot.client.on('message', async message => {
 
 			message.channel.stopTyping();
 		} catch (err){
-			console.log(err.stack);
+            commandErrorCount++;
+            message.channel.send({embed : new Discord.MessageEmbed().setTitle("Error " + commandErrorCount)
+                                            .setDescription("This command is having issues right now. Please try again later\nThis has been logged")
+                                            .addField("Error", err.message) });
+			console.log("Error " + commandErrorCount + " : " + err.stack);
 			message.channel.stopTyping();
 			return;
 		}
@@ -373,7 +378,7 @@ bot.client.on('error', error => {
 	// 	stream.end();
 	// 	process.exit();
 	// });
-	console.log("Error: " + new Date() + " -> " + error.message + "\n" + error.stack);
+	console.log("Error - " + commandErrorCount + " : " + new Date() + " -> " + error.message + "\n" + error.stack);
 });
 
 bot.client.on('disconnect', error => {

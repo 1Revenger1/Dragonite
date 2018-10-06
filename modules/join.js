@@ -12,19 +12,19 @@ module.exports = {
 		
 		try{
 			//Check if user is in voice channel
-			if(!message.member.voiceChannel) {
+			if(!message.member.voice) {
 				message.channel.send('You need to join a voice channel first');
 				throw new Error('You need to join a voice channel first');
 			}
 	
 			//Check if there is a default music channel
-			if((server.defaultMusic != null) && (message.member.voiceChannel.id != server.defaultMusic.id)){
+			if((server.defaultMusic != null) && (message.member.voice.channelID != server.defaultMusic.id)){
 				message.channel.send('I am not allowed to join `' + message.member.voiceChannel.name + '`');
 				throw new Error('The Admins have not allowed me to join this channel');
 			}
 		
 			//Check if Dragonite can actually join the voice channel
-			if(!message.member.voiceChannel.joinable){
+			if(!message.member.voice.channel.joinable){
 				message.channel.send('I cannot join this voice channel!');
 				throw new Error('I cannot join this voice channel!');
 			}
@@ -33,7 +33,7 @@ module.exports = {
 			if(!server.player){
 				server.player = await bot.manager.join({
 					guild: message.guild.id,
-					channel: message.member.voiceChannel.id,
+					channel: message.member.voice.channelID,
 					host: "10.0.0.67"
 				}, { selfdeaf: true });
 			} else 
@@ -45,7 +45,7 @@ module.exports = {
 				console.log(err);
 			})
 			
-			return message.reply('I have successfully connected to `' + message.member.voiceChannel.name + '`');
+			return message.reply('I have successfully connected to `' + message.member.voice.channel.name + '`');
 		} catch(err){
 			return message.channel.send(err.message);
 		}

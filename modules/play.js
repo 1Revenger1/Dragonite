@@ -16,7 +16,7 @@ module.exports = {
     
         const server = bot.servers[message.guild.id];
 
-		if(!message.member.voiceChannelID || (message.guild.voiceConnection && message.member.voiceChannelID != message.guild.voiceConnection.channel.id)){
+		if(!message.member.voice.channelID || (message.guild.voiceConnection && message.member.voice.channelID != message.guild.voiceConnection.voiceChannelID)){
 			message.channel.send("Please join a voice channel before requesting a song.\nYou must also be in the same voice channel as me");
 			return;
 		}
