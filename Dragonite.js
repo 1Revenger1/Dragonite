@@ -244,7 +244,7 @@ bot.client.on('guildCreate', guild => {
 
 bot.client.on('guildDelete', guild => {
 	bot.db.run("DELETE FROM servers WHERE serverid=" + guild.id);
-	bot.servers[guild.id] = null;
+    delete bot.servers[guild.id];
 });
 
 let commandErrorCount = 0;
@@ -262,7 +262,12 @@ bot.client.on('message', async message => {
 					message.channel.send("Error getting channel");
 					return;
 				}
-				bot.currentChannel.on('collect', m => bot.client.users.get('139548522377641984').send({embed: new Discord.MessageEmbed().setTitle(m.member.displayName).setColor(m.member.roles.color.hexColor).setDescription(m.content)}));
+				bot.currentChannel.on('collect', m => {
+                    let embed = new Discord.MessageEmbed().setTitle(m.member.displayName).setDescription(m.content);
+                    if(m.member.roles.color) embed.setColor(m.member.roles.color.hexColor);
+                    
+                    bot.client.users.get('139548522377641984').send({embed: embed})
+                });
 				return;
 			}
 			
@@ -297,6 +302,9 @@ bot.client.on('message', async message => {
 			Console.log("Error getting server from " + message.guild.id + " : " + message.guild.name);
 		}
 
+        //Check Dragonite can chat
+        if(!message.channel.permissionsFor(message.guild.me).has("SEND_MESSAGES")) return;
+        
 		//Edge case so that users can mention dragonite to get the prefix
 		if(message.content.toLowerCase().indexOf(message.guild.me.toString()) !== -1 && message.content.toLowerCase().indexOf('prefix') !== -1 && message.member.id != bot.client.user.id && message.content.toLowerCase().indexOf('options') == -1){
 			message.channel.send('Use `@' + message.guild.me.displayName + ' help` to see prefix and get help for commands');

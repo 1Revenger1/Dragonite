@@ -6,7 +6,6 @@ module.exports = {
 	cat: "music",
 	ignore: true,
     run: async (bot, message, args) => {
-        var dragonite = `../Dragonite.js`;
     
         const server = bot.servers[message.guild.id];
 		
@@ -47,12 +46,13 @@ module.exports = {
 			
 			return message.reply('I have successfully connected to `' + message.member.voice.channel.name + '`');
 		} catch(err){
+            console.log(err);
 			return message.channel.send(err.message);
 		}
 
 		//Function for when a song ends
 		function endHandle() {
-            const server = require(dragonite).bot.servers[message.guild.id];
+            let server = bot.servers[message.guild.id];
             
             if(server.queue === null){
                 message.channel.send('Dragonite stopped and queue emptied');

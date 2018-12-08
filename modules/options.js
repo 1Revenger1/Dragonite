@@ -89,8 +89,8 @@ module.exports = {
                     server.defaultMusic = null;
                     bot.db.run("UPDATE servers SET defaultMusicID=null WHERE serverid = " + message.guild.id);
                 } else if (args[2]){
-                    if(message.guild.channels.exists('name', args[2])){
-                        server.defaultMusic = message.guild.channels.find('name', args[2]);
+                    if(message.guild.channels.find(channel => channel.name == args[2]) != undefined){
+                        server.defaultMusic = message.guild.channels.find(channel => channel.name == args[2]);
                         bot.db.run("UPDATE servers SET defaultMusicID=\'" + server.defaultMusic.id + "\' WHERE serverid = " + message.guild.id);
                         message.channel.send("Music channel set to " + args[2]);
                         return;
@@ -131,8 +131,8 @@ module.exports = {
                             optionChanged = setTrueCheck(args[3], server, "Role Logging", message);
                             break;
                         case "setloggingchannel":
-                            if(message.guild.channels.exists('name', args[3])){
-                                server.logChannel = message.guild.channels.find('name', args[3]);
+                            if(message.guild.channels.find(channel => channel.name == args[3]) != undefined){
+                                server.logChannel = message.guild.channels.find(channel => channel.name == args[3]);
                                 bot.db.run("UPDATE servers SET loggingChannelID=\'" + server.logChannel.id + "\' WHERE serverid = " + message.guild.id);
                                 message.channel.send("Logging channel set to " + args[3]);
                                 return;
@@ -141,8 +141,8 @@ module.exports = {
                             }
                             break;
                         case "setjoinloggingchannel":
-                            if(message.guild.channels.exists('name', args[3])){
-                                server.userLogChannel = message.guild.channels.find('name', args[3]);
+                            if(message.guild.channels.find(channel => channel.name == args[3]) != undefined){
+                                server.userLogChannel = message.guild.channels.find(channel => channel.name == args[3]);
                                 bot.db.run("UPDATE servers SET userJoinLogChannelID=\'" + server.userLogChannel.id + "\' WHERE serverid = " + message.guild.id);
                                 message.channel.send("Join Logging channel set to " + args[3]);
                                 return;

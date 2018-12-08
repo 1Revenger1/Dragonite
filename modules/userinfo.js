@@ -30,9 +30,12 @@ module.exports = {
         embed.addField("Activity", member.user.presence.activity ? member.user.presence.activity.name : "N/A", true);
         embed.addField("Hoist Role", member.roles.hoist, true);
         embed.addField("Highest Role", member.roles.highest, true);
-        embed.addField("Color Role", member.roles.color, true);
-        embed.addField("Color Role Hexcode", member.roles.color.hexColor, true);
         
+        if(member.roles.color){
+            embed.addField("Color Role", member.roles.color, true);
+            embed.addField("Color Role Hexcode", member.roles.color.hexColor, true);
+            embed.setColor(member.roles.color.hexColor);
+        }
         let roleStr = "";
         let roleCount = 0;
 
@@ -45,7 +48,6 @@ module.exports = {
 
         embed.addField("Roles [ " + (roleCount - 1) + " ]", roleStr);
         embed.addField("Icon URL", member.user.displayAvatarURL());
-        embed.setColor(member.roles.color.hexColor);
 
         embed.setThumbnail(member.user.displayAvatarURL());
 

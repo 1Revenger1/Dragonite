@@ -11,10 +11,10 @@ module.exports = {
 	cat: "music",
     aliases: [],
     run: async (bot, message, args, dontDisplay) => {
-        var dragonite = `../Dragonite.js`;
+        let dragonite = `../Dragonite.js`;
     
-        const server = bot.servers[message.guild.id];
-		const lavalinkKey = require(dragonite).tokens().lavalink();
+        let server = bot.servers[message.guild.id];
+		let lavalinkKey = require(dragonite).tokens().lavalink();
 		
 		if(!dontDisplay){
 			dontDisplay = false;
@@ -27,12 +27,12 @@ module.exports = {
 		if(!server.queue) {
 			server.queue = [];
 		}
-		
-		if(isDisplay){
+		/*
+		if(!isDisplay){
 			startValue++;
 		}
-
-		for(var i = startValue; i < args.length; i++){
+*/
+		for(let i = startValue; i < args.length; i++){
 			searchTerm += args[i] + " ";
 		}
 

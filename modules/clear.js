@@ -14,7 +14,7 @@ module.exports = {
 			return;
 		}
 		
-		if(message.member.voiceChannelID != server.player.channel){
+		if(message.member.voice.channelID != server.player.channel){
 			message.channel.send("You are not in the voice channel I'm currently playing in");
 			return
         }

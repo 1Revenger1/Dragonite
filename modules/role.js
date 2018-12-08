@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 
 module.exports = {
     name: "role",
-    aliases: [],    
+    aliases: ["roles"],    
     helpDesc: "Gives the user a role if the name of it is provided. Otherwise lists all the roles Dragonite can give.",
     helpTitle: "Role <Optional: role name>",
     run: async (bot, message, args) => {
@@ -35,7 +35,9 @@ module.exports = {
             }
             
             
-            msgDesc += "\n\nYou can assign these roles by using " + server.prefix + "role <names of roles>\nEX: `" + server.prefix + "role role1, role2, role3`";
+            msgDesc += "\n\nYou can assign these roles by using " + server.prefix + "role <names of roles>\nEX: `" + server.prefix + "role ";
+            msgDesc += server.roles[0].name;
+            if(server.roles[1]) msgDesc += ", " + server.roles[1].name + "`";
             msg.setDescription(msgDesc);
             message.channel.send({embed: msg});
         } else {
