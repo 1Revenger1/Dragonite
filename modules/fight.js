@@ -12,7 +12,20 @@ const responses = [
     //Above responses by Micheal from 4150
     ' was swept off their feet by ',
     ' was hit by a hammer by ',
-    ' had their dexterity dropped 2 by '
+    ' was given a G20 violation by ',
+    ' had their dexterity dropped 2 by ',
+    //Responses below by BeanBoy from 5468
+    ' was stabbed by a screwdriver by ',
+    ' had Endgame spoiled for them by ',
+    ' had GOT spoiled for them by ',
+    ' was given a RED card by ',
+    ' was given a YELLOW card by ',
+    ' was called out for not wearing safety glasses in the pits by ',
+    ' was forced to waste their time on a failing robot design for most of build season by ',
+    ' was told it was programming\'s fault at least 76 times by ',
+    ' was blatently shown an \'ok\' sign below the waist by ',
+    //Reponses below by ben 2976
+    ' was bopped on the nose by '
 ]
 
 module.exports = {
@@ -190,6 +203,9 @@ module.exports = {
             bot.fightDB.run(`UPDATE ServerID${message.guild.id} SET EXP = '${personTwo.exp}' WHERE userID = '${personTwo.member.id}'`);
 
             server.isFighting = false;
+            
+            await bot.sleep(5000);
+            
             setTimeout(async function(){
                 for(var i = 0; i < messagesToDelete.length; i++){
                     await messagesToDelete[i].delete();

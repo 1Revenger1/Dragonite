@@ -20,6 +20,8 @@ module.exports = {
         var num;
         var statChanged;
         var newTotal;
+        
+        if(server.isFighting) return message.channel.send("Please wait for the fight to finish");
 
         
         let person = message.member;

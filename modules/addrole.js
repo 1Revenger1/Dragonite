@@ -27,6 +27,10 @@ module.exports = {
             return;
         }
 
+        if(!server.roles){
+            server.roles = [];
+        }
+        
         for(var i = 0; i < server.roles.length; i++){
             if(roleArg == server.roles[i].name){
                 message.channel.send("Role already in list!");

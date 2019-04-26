@@ -6,8 +6,6 @@ module.exports = {
     helpDesc: "Gives the user a role if the name of it is provided. Otherwise lists all the roles Dragonite can give.",
     helpTitle: "Role <Optional: role name>",
     run: async (bot, message, args) => {
-        var dragonite = `../Dragonite.js`;
-    
         const server = bot.servers[message.guild.id];
         
         if(!(server.selfAssignOn == 'true')){
@@ -58,13 +56,19 @@ module.exports = {
                 .setAuthor(message.guild.name + " roles" , message.guild.iconURL());
             let msgAdded = "";
             let msgRemoved = "";
+            let msgRIP = "";
             
+            let found = false;
             let countError = 0;
             
             for(roleI in rolesToGiveArgs){
+                found = false;
                 rolesToGiveArgs[roleI] = rolesToGiveArgs[roleI].trim();
+                
+                //Check role exists
                 for(serverRole in server.roles){
                     if(rolesToGiveArgs[roleI] == server.roles[serverRole].name){
+                        found = true;
                         let role = server.roles[serverRole];
                         try{
                             if(message.member.roles.has(role.id)){
@@ -78,15 +82,24 @@ module.exports = {
                             countError++;
                             console.log(err);
                         }
+                        
+                        break;
                     }
                 }
+                
+                if(!found){
+                    msgRIP += "`" + rolesToGiveArgs[roleI] + "`";
+                }
             }
-            
+                    
             if(msgAdded != "")
                 msg.addField("Roles added", msgAdded);
             
             if(msgRemoved != "")
                 msg.addField("Roles removed", msgRemoved);
+            
+            if(msgRIP != "")
+                msg.addField("These roles do not exist", msgRIP);
             
             if(countError > 0){
                 msg.addField(countError + " errors occured!", "Make sure the roles exist!");

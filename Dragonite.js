@@ -407,9 +407,11 @@ bot.sleep = async function(millis) {
 
 bot.checkRoleExists = async function(type, v, g){
 	if(type == "id"){
-		return g.roles.exists('id', v);
+        let role = g.roles.get(v);
+        return role != null;
 	} else if (type == "name"){
-		return g.roles.exists('name', v);
+        let role = g.roles.find(role => role.name === v);
+        return role != null;
 	}
 }
 
