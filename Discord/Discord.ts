@@ -1,6 +1,6 @@
 import { Message, Role } from "discord.js";
 
-enum PermissionType {
+export enum PermissionType {
     OWNER,
     USER_ID,
     GUILD_PERMISSION

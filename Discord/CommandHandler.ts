@@ -1,6 +1,6 @@
 import { Message, TextChannel, DMChannel } from "discord.js";
 import { getDragonite } from "../Index";
-import { Server, Command } from "./Discord";
+import { Server, Command, PermissionType } from "./Discord";
 
 var errorID : number = 0;
 
@@ -48,7 +48,28 @@ export async function handleMessage(message : Message) : Promise<void> {
     let command : Command;
 
     try{
-        command.run(message, server, args, mentionTrigger);
+        message.channel.startTyping();
+
+        switch(command.permissionReq.type){
+            case PermissionType.OWNER:
+                if(message.author.id != getDragonite().prefs.ownerID){
+                    message.channel.send("This can only be ran by the owner of Dragonite");
+                    return;
+                }
+
+                break;
+            case PermissionType.GUILD_PERMISSION:
+                if(!message.member.hasPermission(command.permissionReq.value)){
+                    message.channel.send("This can only be ran by someone with the `" + command.permissionReq.value + "` permission");
+                    return;
+                }
+            default:
+        }
+
+
+        await command.run(message, server, args, mentionTrigger);
+
+        message.channel.stopTyping();
         //Run Commands
     } catch (err) {
         //Handle errors -> Display error message and show that it's been logged
