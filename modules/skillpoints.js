@@ -4,7 +4,7 @@ var statEnum = {
     HP: "HP",
     Speed: "SPEED",
     Damage: "DAMAGE",
-    EXP: "EXP-Multiplier"
+    EXP: "EXP"
 }
 
 module.exports = {
@@ -57,7 +57,7 @@ module.exports = {
             if((!message.mentionEvent && !args[1]) || (message.mentionEvent && !args[2]) || person != message.member){
                 embed.setAuthor(person.displayName + "'s stats in " + message.guild.name , person.user.displayAvatarURL());
                 embed.setDescription("Level: " + sqlDataPer1.level + "\nEXP: (" + expForm.currentEXP + " / " + expForm.neededEXP + ")");
-                embed.addField("Stat Levels", `HP: ${(sqlDataPer1.HP)}\nSpeed: ${(sqlDataPer1.SPEED)}\nDamage: ${(sqlDataPer1.DAMAGE)}\nEXP-Multiplier: ${(sqlDataPer1.EXPM)}`);
+                embed.addField("Stat Levels", `HP: ${(sqlDataPer1.HP)}\nSpeed: ${(sqlDataPer1.SPEED)}\nDamage: ${(sqlDataPer1.DAMAGE)}\nEXP: ${(sqlDataPer1.EXPM)}`);
                 embed.addField("Skill points to spend", skillPts + "\nSpend by doing " + server.prefix + "skillpoints <name> <num of points to spend>");
             } else {
                 embed.setAuthor(person.displayName + " Skill Point Confirmation", person.user.displayAvatarURL());;

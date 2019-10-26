@@ -20,7 +20,7 @@ interface Permission {
  */
 export interface Command {
     description : string;
-    aliases : string[];
+    aliases ?: string[];
     permissionReq ?: Permission;
     run(message : Message, server : Server, args : string[], mentionTrigger : boolean) : void;
 }
