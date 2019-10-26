@@ -4,6 +4,6 @@ import { Message } from "discord.js";
 export default class Ping implements Command {
     description = "Hello World";
     run(message: Message, server: Server, args: String[], mentionTrigger: Boolean) {
-        console.log("bleh1");
+        message.channel.send("Heck was ran!");
     }
 }

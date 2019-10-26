@@ -35,10 +35,10 @@ function loadDir(folder: PathLike, toFill: Object) {
 
 export async function handleMessage(message : Message) : Promise<void> {
     
-    if(message.author.id == getDragonite().user.id || !message.content) return;
+    if(message.author.bot || !message.content) return;
 
     if(message.channel instanceof DMChannel){    
-        //If it's a user, do nothing
+        //If it's a user, respond that commands aren't accepted
         if(message.author.id != getDragonite().prefs.ownerID) {
             message.reply("Dragonite does not respond to DMs");
             return;
