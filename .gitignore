@@ -60,6 +60,6 @@ typings/
 .env
 
 database.txt
-/modulesBeta
 Logging Notes.txt
 fightDB.txt
+/lib

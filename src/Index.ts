@@ -1,8 +1,7 @@
 import { Collection, Client, TextChannel } from "discord.js";
-import { Command, Server } from "./Discord/Discord";
-import { handleMessage, loadCommands } from "./Discord/CommandHandler";
+import { Server } from "./Discord/Discord";
+import { CommandHandler } from "./Discord/CommandHandler";
 import { guildCreate, guildDelete } from "./Discord/Guild";
-import RethinkDB from "rethinkdb";
 import env from "dotenv";
 
 env.config();
@@ -17,44 +16,43 @@ class Preferences {
 }
 
 class DiscordBot extends Client{
-    commands : {};
-    servers : Collection<string, Server>;
+
+    serverConfigs : Collection<string, Server>;
     isBeta : boolean = false;
     portalChannel : TextChannel;
-    rethinkDB : any = RethinkDB;
     prefs : Preferences;
+    commandHandler : CommandHandler;
     private started : boolean = false;
     private gameTimer : NodeJS.Timeout;
     private timer : number = 0;
 
     constructor() {
         super();
-        this.commands = loadCommands();
-        this.servers = new Collection<string, Server>();
 
-        if("" + process.argv.slice(2) == '-b') {
-            this.isBeta = true;
-        }
+        this.serverConfigs = new Collection<string, Server>();
+        this.serverConfigs.set("DEFAULT", new Server());
 
-        this.login(this.isBeta ? process.env.BETA_DISCORD_AUTH : process.env.DISCORD_AUTH);
-        this.on("ready", this.handleReady);
+        this.commandHandler = new CommandHandler();
+        this.login(process.env.DISCORD_AUTH);
+        this.on("ready", this.handleReady.bind(this));
     }
 
     private handleReady() : void {
-        log("Ready event fired!");
-        if(this.started) return error("Dragonite already started");
+        log("DRG - Ready event fired!");
+        if(this.started) return error("DRG - Dragonite already started");
 
         this.started = true;
 
-        this.on("message", handleMessage);
+        this.on("message", this.commandHandler.handleMessage.bind(this.commandHandler));
         this.on("guildCreate", guildCreate);
         this.on("guildDelete", guildDelete);
-        this.gameTimer = setInterval(this.changeGame, GAME_TIMER);
+        this.gameTimer = setInterval(this.changeGame.bind(this), GAME_TIMER);
         this.changeGame();
     }
 
     private changeGame() {
-        let serverNumber = this.guilds.size;
+        let serverNumber = this.guilds.cache.size; // Cache becomes null?
+        // let serverNumber = this.serverConfigs.size;
         let games = ["with other sentient bots...what?",
                  "Use '@Dragonite help' for commands",
                  (`I'm in ${serverNumber} guilds!`),
@@ -65,8 +63,6 @@ class DiscordBot extends Client{
         this.user.setActivity(games[this.timer]);
     }
 }
-
-const Bot = new DiscordBot();
 
 export function getDragonite() : DiscordBot {
     return Bot;
@@ -79,3 +75,5 @@ export function error(message : string){
 export function log(message : string){
     console.log(new Date().toISOString() + ": " + message);
 }
+
+const Bot = new DiscordBot();

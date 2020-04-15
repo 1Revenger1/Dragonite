@@ -19,16 +19,18 @@ interface Permission {
  * This stores help information as well as a @Permission
  */
 export interface Command {
+    name : string;
     description : string;
     aliases ?: string[];
+    category ?: string;
     permissionReq ?: Permission;
     run(message : Message, server : Server, args : string[], mentionTrigger : boolean) : void;
 }
 
-export interface Server {
-    prefix : string;
-    volume : number;
+export class Server {
+    prefix : string = process.env.DEFAULT_PREFIX ? process.env.DEFAULT_PREFIX : ";;";
+    volume : number = 50;
 
-    selfAssignOn : boolean;
-    selfAssignRoles : Role;
+    selfAssignOn : boolean = false;
+    selfAssignRoles : string[];
 }

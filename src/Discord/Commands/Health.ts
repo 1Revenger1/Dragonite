@@ -2,8 +2,9 @@ import { Command, Server } from "../Discord"
 import { Message } from "discord.js";
 import { getDragonite } from "../../Index";
 
-export default class Ping implements Command {
+class Ping implements Command {
     description = "Hello World";
+    name = "ping";
     async run(message: Message, server: Server, args: String[], mentionTrigger: Boolean) {
         let ping1 = message.createdTimestamp;
         let msg = await message.channel.send('Pinging...')
@@ -17,3 +18,8 @@ export default class Ping implements Command {
         }    
     }
 }
+
+let cmds = [
+    Ping
+];
+export default cmds;

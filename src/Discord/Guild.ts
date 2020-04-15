@@ -2,7 +2,7 @@ import { Guild } from "discord.js";
 import { getDragonite } from "../Index";
 
 export async function guildCreate(guild : Guild)  {
-    let serverTable = getDragonite().rethinkDB.db('servers').table(`server${guild.id}`);
+    // let serverTable = getDragonite().rethinkDB.db('servers').table(`server${guild.id}`);
 
     
 
